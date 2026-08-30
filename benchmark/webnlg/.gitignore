@@ -1,0 +1,23 @@
+# Python environment and caches
+/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Downloaded WebNLG data and all generated benchmark artifacts
+/data/
+/build/
+
+# Elvex resources generated from the downloaded dataset
+/user/main.pattern
+/user/main.morpho
+/user/main.input
+/user/lexicon/generated_determiners.lexicon
+/user/lexicon/predicate_suggestions.tsv
+
+# Local OS/editor noise
+.DS_Store
+*.swp
+*~
