@@ -13,12 +13,22 @@ sys.path.insert(0, str(ROOT))
 from lib.webnlg_utils import read_jsonl, write_jsonl
 
 
-def atomic_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Create a 1-triple view from all observed triples.
+def parse_sizes(value: str) -> set[int]:
+    try:
+        sizes = {int(x.strip()) for x in value.split(",") if x.strip()}
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("sizes must be comma-separated integers") from exc
+    if not sizes or min(sizes) < 1:
+        raise argparse.ArgumentTypeError("sizes must contain positive integers")
+    return sizes
 
-    Some WebNLG dumps do not contain documentary entries of size 1,
-    but we still want to work on single triples. This function
-    therefore expands each individual triple into a standalone row.
+
+def atomic_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Optional development view: one row per distinct observed triple.
+
+    This view is deliberately *not* used by the paper benchmark because a
+    lexicalisation of a multi-triple entry is not a gold reference for one of
+    its component triples.
     """
     out: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
@@ -36,41 +46,51 @@ def atomic_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "split": row.get("split"),
                 "size": 1,
                 "triples": [triple],
-                "lexicalizations": row.get("lexicalizations", []),
+                # Intentionally empty: the source sentence may express more
+                # than this isolated triple and is therefore not a gold ref.
+                "lexicalizations": [],
             })
     return out
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Select entries by number of triples")
+    ap = argparse.ArgumentParser(description="Select official WebNLG entries by split and triple-set size")
     ap.add_argument("--triples", default=str(ROOT / "data/processed/triples.jsonl"))
     ap.add_argument("--out-dir", default=str(ROOT / "build/sequences"))
-    ap.add_argument("--atomic", action=argparse.BooleanOptionalAction, default=True,
-                    help="Write build/sequences/1.jsonl by expanding all individual triples")
+    ap.add_argument("--split", default="test", choices=["train", "dev", "test", "all"],
+                    help="Benchmark split. Default: test")
+    ap.add_argument("--sizes", type=parse_sizes, default=parse_sizes("1,2,3"),
+                    help="Comma-separated official triple-set sizes. Default: 1,2,3")
+    ap.add_argument("--atomic", action="store_true",
+                    help="Development-only: replace size=1 by isolated distinct triples with no gold references")
     args = ap.parse_args()
 
     source_rows = list(read_jsonl(Path(args.triples)))
+    rows = [r for r in source_rows if args.split == "all" or r.get("split") == args.split]
+
     groups: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for row in source_rows:
-        groups[len(row.get("triples", []))].append(row)
+    for row in rows:
+        triples = row.get("triples", [])
+        declared = int(row.get("size", len(triples)))
+        if declared != len(triples):
+            raise SystemExit(
+                f"Entry {row.get('id')} has size={declared} but {len(triples)} extracted modified triples"
+            )
+        if declared in args.sizes:
+            groups[declared].append(row)
 
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    if args.atomic:
-        one_rows = atomic_rows(source_rows)
-        n = write_jsonl(out / "1.jsonl", one_rows)
-        print(f"1 atomic triple(s): {n} -> {out / '1.jsonl'}")
-    elif 1 in groups:
-        n = write_jsonl(out / "1.jsonl", groups[1])
-        print(f"1 triple(s): {n} -> {out / '1.jsonl'}")
+    for size in sorted(args.sizes):
+        dest = out / f"{size}.jsonl"
+        selected = groups.get(size, [])
+        if size == 1 and args.atomic:
+            selected = atomic_rows(rows)
+        n = write_jsonl(dest, selected)
+        mode = "atomic development" if size == 1 and args.atomic else "official"
+        print(f"{size} triple(s), {args.split} split, {mode}: {n} -> {dest}")
 
-    for size, rows in sorted(groups.items()):
-        if size == 1:
-            # Already written above, either as an atomic view or as a native group.
-            continue
-        n = write_jsonl(out / f"{size}.jsonl", rows)
-        print(f"{size} triple(s): {n} -> {out / f'{size}.jsonl'}")
     return 0
 
 

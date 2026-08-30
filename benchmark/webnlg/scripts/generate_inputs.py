@@ -10,7 +10,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from lib.webnlg_utils import read_jsonl, elvex_atom, write_jsonl, parse_rdf_literal, parse_number_value, quote_form
+from lib.webnlg_utils import read_jsonl, elvex_atom, parse_rdf_literal, parse_number_value, quote_form
 
 
 DATE_LITERAL_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -794,8 +794,11 @@ def fs_for_triple(t: dict[str, str], pattern: str, get_id=None, frame_heads: set
 
 
 def fs_for_row(row: dict[str, Any], patterns: dict[str, str], frame_heads: set[str]) -> str:
-    raw_triples = row.get("triples", [])
-    triples = canonicalize_sequence_triples(raw_triples) if len(raw_triples) > 1 else list(raw_triples)
+    # Preserve the official modified triple set exactly.  Earlier development
+    # versions canonicalized/merged near-duplicate triples to compensate for
+    # mixed-source extraction; the corrected extractor no longer mixes
+    # original and modified triples, so benchmark inputs must not be rewritten.
+    triples = list(row.get("triples", []))
     get_id = _id_allocator()
     if len(triples) == 1:
         t = triples[0]
@@ -815,28 +818,6 @@ def fs_for_row(row: dict[str, Any], patterns: dict[str, str], frame_heads: set[s
     args_parts = [f"{name}:{fs}" for name, fs in zip(arg_names, triple_fss)]
     args = ", ".join(args_parts)
     return f"S [HEAD:webnlg_sequence, size:{len(triples)}, {args}]"
-
-
-def build_atomic_sequence(triples_file: Path, seq_file: Path) -> int:
-    rows: list[dict[str, Any]] = []
-    seen: set[tuple[str, str, str]] = set()
-    for row in read_jsonl(triples_file):
-        for idx, triple in enumerate(row.get("triples", []), start=1):
-            key = (triple.get("subject", ""), triple.get("predicate", ""), triple.get("object", ""))
-            if key in seen:
-                continue
-            seen.add(key)
-            rows.append({
-                "id": f"{row.get('id', 'entry')}#t{idx}",
-                "source_entry_id": row.get("id"),
-                "source_file": row.get("source_file"),
-                "category": row.get("category"),
-                "split": row.get("split"),
-                "size": 1,
-                "triples": [triple],
-                "lexicalizations": row.get("lexicalizations", []),
-            })
-    return write_jsonl(seq_file, rows)
 
 
 def safe_test_name(raw_id: str, ordinal: int) -> str:
@@ -869,7 +850,6 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Generate one Elvex .input file per WebNLG entry of a given triple count")
     ap.add_argument("size", nargs="?", type=int, default=1, help="Number of triples per WebNLG entry. Default: 1")
     ap.add_argument("--seq", default=None, help="Source JSONL. Default: build/sequences/<size>.jsonl")
-    ap.add_argument("--triples", default=str(ROOT / "data/processed/triples.jsonl"), help="Fallback used to create size=1 if missing")
     ap.add_argument("--lexicon-dir", default=str(ROOT / "user/lexicon"))
     ap.add_argument("--user-dir", default=str(ROOT / "user"))
     ap.add_argument("--out-dir", default=None, help="Directory receiving one .input file per WebNLG entry")
@@ -891,14 +871,10 @@ def main() -> int:
     combined_path = Path(args.combined_out) if args.combined_out else default_combined
 
     if not seq.exists():
-        if args.size == 1:
-            triples = Path(args.triples)
-            if not triples.exists():
-                raise SystemExit(f"Not found: {seq}. Run ./run extract and then ./run select.")
-            n = build_atomic_sequence(triples, seq)
-            print(f"{seq} missing; atomic view created from {triples}: {n} triple(s)")
-        else:
-            raise SystemExit(f"Not found: {seq}. Run ./run select first, or choose an available size from build/sequences/.")
+        raise SystemExit(
+            f"Not found: {seq}. Run ./run select first. "
+            "Paper benchmarks use native WebNLG entries, not atomic triples extracted from larger entries."
+        )
 
     patterns = read_patterns(Path(args.lexicon_dir))
     frame_heads = read_frame_heads(Path(args.user_dir))

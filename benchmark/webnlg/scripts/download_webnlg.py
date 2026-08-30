@@ -10,14 +10,24 @@ def run(cmd: list[str]) -> None:
     print("+", " ".join(cmd))
     subprocess.run(cmd, check=True)
 
-def git_clone_or_pull(url: str, dest: Path) -> None:
+def git_clone_or_pull(url: str, dest: Path, revision: str | None = None) -> None:
     if dest.exists() and (dest / ".git").exists():
-        run(["git", "-C", str(dest), "pull", "--ff-only"])
+        if revision:
+            run(["git", "-C", str(dest), "fetch", "--depth", "1", "origin", revision])
+            run(["git", "-C", str(dest), "checkout", "--detach", "FETCH_HEAD"])
+        else:
+            run(["git", "-C", str(dest), "pull", "--ff-only"])
     elif dest.exists() and any(dest.iterdir()):
         print(f"[skip] {dest} already exists and is not a git repository")
     else:
         dest.parent.mkdir(parents=True, exist_ok=True)
-        run(["git", "clone", "--depth", "1", url, str(dest)])
+        if revision:
+            run(["git", "init", str(dest)])
+            run(["git", "-C", str(dest), "remote", "add", "origin", url])
+            run(["git", "-C", str(dest), "fetch", "--depth", "1", "origin", revision])
+            run(["git", "-C", str(dest), "checkout", "--detach", "FETCH_HEAD"])
+        else:
+            run(["git", "clone", "--depth", "1", url, str(dest)])
 
 def download_zip(url: str, dest: Path) -> None:
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -43,7 +53,7 @@ def main() -> int:
             if typ == "git":
                 if not shutil.which("git"):
                     raise RuntimeError("git est requis pour cette source")
-                git_clone_or_pull(source["url"], dest)
+                git_clone_or_pull(source["url"], dest, source.get("revision"))
             elif typ == "zip":
                 download_zip(source["url"], dest)
             else:

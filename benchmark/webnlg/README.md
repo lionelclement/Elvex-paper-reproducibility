@@ -1,6 +1,6 @@
 # WebNLG → Elvex starter project
 
-This project downloads WebNLG, extracts RDF triples, builds starter Elvex resources, selects entries by triple count, and creates one Elvex input file per test.
+This project downloads a pinned official WebNLG release, extracts modified RDF triples and their human lexicalisations, builds starter Elvex resources, selects benchmark entries by split and triple count, and creates one Elvex input file per entry.
 
 The project is intentionally conservative. It is a first grammar and lexicon bootstrap, not a complete WebNLG realizer.
 
@@ -33,7 +33,7 @@ build/lexicon/main.fsa
 
 Important: `elvex` must receive exactly one generation input per command. Therefore `user/main.input` is only the current sample input. The complete WebNLG test sets are split into individual `.input` files.
 
-For atomic triples:
+For native one-triple WebNLG entries:
 
 ```text
 build/inputs/simple_triples/
@@ -102,6 +102,7 @@ build/lexicon/main.fsa
 ```bash
 ./run download       # download WebNLG sources into data/raw/
 ./run extract        # write data/processed/triples.jsonl
+./run data-check     # verify release/split/size invariants and print counts
 ./run lexicon        # write user/main.pattern, user/main.morpho and generated local lexicon files
 ./run compact        # build build/lexicon/main.tbl and .fsa with elvexlexicon
 ./run select         # write build/sequences/<n>.jsonl
@@ -112,22 +113,33 @@ build/lexicon/main.fsa
 ./run elvex-sample   # call elvex on user/main.input
 ./run elvex-one PATH # call elvex on a single .input file
 ./run elvex-tests 2 20  # call elvex on 20 generated tests with 2 triples
-./run compare-one 1 1   # show Elvex output beside WebNLG references for one atomic test
+./run compare-one 1 1   # show Elvex output beside WebNLG references for one native 1-triple test entry
 ./run compare-one 2 1   # same for the first 2-triple test
-./run compare 1 20      # write a comparison report for 20 atomic tests
+./run compare 1 20      # write a comparison report for 20 native 1-triple test entries
 ./run compare 2 20      # write a comparison report for 20 two-triple tests
 ```
 
-## Inputs by number of triples
+## Benchmark data protocol
 
-The selector step writes entries by triple count:
+The default benchmark is deliberately narrow and reproducible:
+
+- official `webnlg-dataset` repository, pinned by commit in `user/sources.json`;
+- WebNLG `release_v2.1/xml` only (the repository also contains duplicate JSON and other releases);
+- `modifiedtripleset` / `mtriple` only, because these are the triples paired with the human lexicalisations;
+- direct `<lex>` elements only; nested referring-expression `<reference>` annotations are not sentence references;
+- official `test` split by default;
+- native WebNLG entries of official sizes 1, 2, and 3.
+- no triple deduplication or near-duplicate merging before Elvex input generation.
+
+`./run extract` writes all train/dev/test entries from this one release to `data/processed/triples.jsonl`. Run `./run data-check` immediately afterwards to verify the source, split, and official-size invariants. `./run select` then selects the official test entries of sizes 1--3:
 
 ```text
-build/sequences/1.jsonl   # atomic view: one row per distinct triple
-build/sequences/2.jsonl   # original WebNLG entries containing 2 triples
-build/sequences/3.jsonl
-...
+build/sequences/1.jsonl   # native WebNLG test entries with size=1
+build/sequences/2.jsonl   # native WebNLG test entries with size=2
+build/sequences/3.jsonl   # native WebNLG test entries with size=3
 ```
+
+Do not create the paper's 1-triple benchmark by splitting larger entries into isolated triples: the human lexicalisation of a multi-triple entry is not a gold reference for one component triple. A development-only atomic view remains available with `./run select --atomic`; its isolated rows deliberately have no gold references.
 
 `./run inputs <n>` consumes `build/sequences/<n>.jsonl` and writes one `.input` file per row.
 
@@ -269,7 +281,7 @@ cop_adj   subject copula adjective
 cop_nom   subject copula noun
 ```
 
-Generated atomic inputs have this form:
+Generated single-triple inputs have this form:
 
 ```elvex
 S [HEAD:webnlg_simple, pattern:svo, s:[HEAD:...], p:[HEAD:...], o:[HEAD:...]]
@@ -460,7 +472,7 @@ Jacob Bundsgaard is the leader of Aarhus.
 
 ## Comparing all Elvex outputs with WebNLG references
 
-`compare-one` and `compare` now run Elvex without `--first` by default. This keeps every generated realization and compares all of them with the WebNLG references.
+`compare-one` and `compare` run Elvex without `--first` by default. This keeps every generated realization and compares all of them with the WebNLG references. Batch comparison also writes a `.summary.json` file containing the quantities used in the paper table: input count, generated-input count, coverage, mean compatible realizations per generated input, exact/normalized exact-match percentages, and mean sentence-level best-of-forest BLEU/chrF.
 
 ```bash
 ./run compare-one 1 1

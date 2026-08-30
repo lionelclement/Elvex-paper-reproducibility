@@ -541,19 +541,48 @@ def main() -> int:
     write_report(results, report)
     ok = sum(1 for r in results if r["status"] == "ok")
     failed = len(results) - ok
-    best_exact = sum(1 for r in results if r.get("best_exact_match") == "yes")
-    best_norm = sum(1 for r in results if r.get("best_normalized_match") == "yes")
-    bleu_values = [float(r["best_bleu"]) for r in results if r.get("best_bleu")]
-    chrf_values = [float(r["best_chrf"]) for r in results if r.get("best_chrf")]
-    print(f"Compared: {len(results)}; ok: {ok}; failed: {failed}")
-    print(f"Best-of-N exact matches: {best_exact}")
-    print(f"Best-of-N normalized matches: {best_norm}")
-    if bleu_values and chrf_values:
-        print(f"Mean best-of-N sacreBLEU BLEU: {sum(bleu_values) / len(bleu_values):.2f}")
-        print(f"Mean best-of-N sacreBLEU chrF: {sum(chrf_values) / len(chrf_values):.2f}")
+    generated_rows = [r for r in results if int(r.get("n_outputs") or 0) > 0]
+    generated = len(generated_rows)
+    coverage = 100.0 * generated / len(results) if results else 0.0
+    total_outputs = sum(int(r.get("n_outputs") or 0) for r in generated_rows)
+    mean_outputs = total_outputs / generated if generated else 0.0
+    best_exact = sum(1 for r in generated_rows if r.get("best_exact_match") == "yes")
+    best_norm = sum(1 for r in generated_rows if r.get("best_normalized_match") == "yes")
+    exact_pct = 100.0 * best_exact / generated if generated else 0.0
+    norm_pct = 100.0 * best_norm / generated if generated else 0.0
+    bleu_values = [float(r["best_bleu"]) for r in generated_rows if r.get("best_bleu")]
+    chrf_values = [float(r["best_chrf"]) for r in generated_rows if r.get("best_chrf")]
+    mean_bleu = sum(bleu_values) / len(bleu_values) if bleu_values else None
+    mean_chrf = sum(chrf_values) / len(chrf_values) if chrf_values else None
+
+    summary = {
+        "triples": args.size,
+        "inputs": len(results),
+        "generated_inputs": generated,
+        "coverage_percent": round(coverage, 4),
+        "mean_compatible_realizations_per_generated_input": round(mean_outputs, 6),
+        "exact_match_percent_generated": round(exact_pct, 4),
+        "normalized_exact_match_percent_generated": round(norm_pct, 4),
+        "mean_sentence_best_of_forest_bleu": round(mean_bleu, 6) if mean_bleu is not None else None,
+        "mean_sentence_best_of_forest_chrf": round(mean_chrf, 6) if mean_chrf is not None else None,
+        "process_ok": ok,
+        "process_failed": failed,
+    }
+    summary_path = report.with_suffix(".summary.json")
+    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print(f"Compared: {len(results)}; process ok: {ok}; process failed: {failed}")
+    print(f"Generated inputs: {generated}/{len(results)} ({coverage:.1f}%)")
+    print(f"Mean compatible realizations per generated input: {mean_outputs:.2f}")
+    print(f"Best-of-N exact matches: {best_exact}/{generated} ({exact_pct:.1f}%)" if generated else "Best-of-N exact matches: 0")
+    print(f"Best-of-N normalized matches: {best_norm}/{generated} ({norm_pct:.1f}%)" if generated else "Best-of-N normalized matches: 0")
+    if mean_bleu is not None and mean_chrf is not None:
+        print(f"Mean sentence-level best-of-N sacreBLEU BLEU: {mean_bleu:.2f}")
+        print(f"Mean sentence-level best-of-N sacreBLEU chrF: {mean_chrf:.2f}")
     else:
         print("sacreBLEU metrics unavailable; run ./run setup")
     print(f"Report: {report}")
+    print(f"Summary: {summary_path}")
     if results:
         print("\nFirst comparison:\n")
         print_one(results[0])

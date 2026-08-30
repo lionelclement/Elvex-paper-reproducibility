@@ -85,6 +85,8 @@ case "$cmd" in
     py_run "$ROOT/scripts/download_webnlg.py" "$@" ;;
   extract)
     py_run "$ROOT/scripts/extract_webnlg.py" "$@" ;;
+  data-check)
+    py_run "$ROOT/scripts/check_webnlg_data.py" "$@" ;;
   lexicon)
     py_run "$ROOT/scripts/build_elvex_lexicon.py" "$@" ;;
   numeric-report)
@@ -225,6 +227,7 @@ Commands:
   setup        Create/update the local Python .venv environment
   download     Download WebNLG into data/raw/
   extract      Extract triples to data/processed/triples.jsonl
+  data-check   Verify release/split/size invariants and print counts
   lexicon      Generate user/main.pattern, user/main.morpho and local includes
   numeric-report [file]
                Report numeric-looking proper_noun entries in a morphology file
