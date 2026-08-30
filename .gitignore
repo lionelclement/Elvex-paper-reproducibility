@@ -5,17 +5,16 @@
 .venv*/
 venv/
 
-# Python cache
+# Python cache and test cache
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
 
-# Generated benchmark inputs / downloaded datasets
-benchmark/benchmark-E2E/bench/data/
-benchmark/benchmark-E2E/bench/e2e/inputs_*/
-benchmark/benchmark-E2E/bench/webnlg/inputs_*/
-benchmark/e2e_gem_repro/runs/*/inputs_full_test/
+# Generated benchmark artifacts / downloaded datasets
+benchmark/e2e/runs/
 benchmark/webnlg/data/
+benchmark/webnlg/build/
 
 # Generated logs
 *.log

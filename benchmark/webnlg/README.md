@@ -8,8 +8,7 @@ The project is intentionally conservative. It is a first grammar and lexicon boo
 
 ```bash
 brew install python git
-unzip webnlg_elvex_format_v5.zip
-cd webnlg
+cd benchmark/webnlg
 ./run setup
 ./run all
 ```
@@ -131,7 +130,7 @@ The default benchmark is deliberately narrow and reproducible:
 - native WebNLG entries of official sizes 1, 2, and 3.
 - no triple deduplication or near-duplicate merging before Elvex input generation.
 
-`./run extract` writes all train/dev/test entries from this one release to `data/processed/triples.jsonl`. Run `./run data-check` immediately afterwards to verify the source, split, and official-size invariants. `./run select` then selects the official test entries of sizes 1--3:
+`./run extract` writes all train/dev/test entries from this one release to `data/processed/triples.jsonl`. Run `./run data-check` immediately afterwards to verify the source, exact release counts, split, and official-size invariants. The expected extracted total is 16,095 entries; the official test split contains 388 size-1, 298 size-2, and 331 size-3 entries. `./run select` then selects the official test entries of sizes 1--3:
 
 ```text
 build/sequences/1.jsonl   # native WebNLG test entries with size=1

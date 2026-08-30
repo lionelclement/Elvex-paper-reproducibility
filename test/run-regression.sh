@@ -22,6 +22,15 @@ fi
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "${TMP_DIR}"' EXIT
 
+filter_elvex_metrics() {
+  # Elvex performance instrumentation is intentionally written to stderr.
+  # It is diagnostic output, not an error stream contract for regression tests.
+  # Keep every other stderr line unchanged.
+  LC_ALL=C awk -F '\t' '
+    $1 != "ELVEX_METRICS_HEADER" && $1 != "ELVEX_METRICS" { print }
+  ' "$1"
+}
+
 normalize_output() {
   # Compare outputs as a set of generated lines:
   #   - normalize CRLF to LF
@@ -101,6 +110,7 @@ run_one() {
   local compacted="${TMP_DIR}/${name}.compacted"
   local actual="${TMP_DIR}/${name}.actual"
   local stderr_log="${TMP_DIR}/${name}.stderr"
+  local stderr_filtered="${TMP_DIR}/${name}.stderr.filtered"
   local actual_sorted="${TMP_DIR}/${name}.actual.sorted"
   local expected_sorted="${TMP_DIR}/${name}.expected.sorted"
   local stderr_sorted="${TMP_DIR}/${name}.stderr.sorted"
@@ -195,8 +205,10 @@ run_one() {
     return 1
   fi
 
+  filter_elvex_metrics "${stderr_log}" > "${stderr_filtered}"
+
   if [[ -f "${expected_stderr}" ]]; then
-    normalize_output "${stderr_log}" > "${stderr_sorted}"
+    normalize_output "${stderr_filtered}" > "${stderr_sorted}"
     normalize_output "${expected_stderr}" > "${expected_stderr_sorted}"
 
     if ! diff -u "${expected_stderr_sorted}" "${stderr_sorted}"; then
@@ -205,9 +217,9 @@ run_one() {
       cat "${stderr_log}" >&2
       return 1
     fi
-  elif [[ -s "${stderr_log}" ]]; then
+  elif [[ -s "${stderr_filtered}" ]]; then
     echo "[WARN] ${name}: stderr was not empty" >&2
-    cat "${stderr_log}" >&2
+    cat "${stderr_filtered}" >&2
   fi
 
   echo "[ OK ] ${name}"

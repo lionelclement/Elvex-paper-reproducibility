@@ -1,0 +1,247 @@
+Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmpbsdyqt_p/train.csv
+Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmpnqjyqu4k/test.json
+=== E2E/GEM dataset ===
+OK   inputs: 1847
+OK   slots: 11428
+OK   references: 4693
+
+=== Train/test lexical separation ===
+OK   lexicon source split: train
+OK   evaluation split: test
+OK   test inputs with unseen values: 0
+OK   all test values seen in train: True
+
+=== Elvex run ===
+OK   evaluated inputs: 1847
+OK   process successful: 1847/1847
+INFO process failed:     0
+INFO generated inputs:   1847/1847 (100.0%)
+INFO total outputs:      1847
+INFO mean outputs/input: 1.00
+
+=== Slot-preservation metrics ===
+
+--- First output ---
+Mode:          first_output
+Inputs:        1847
+Coverage:      100.0%
+Slots:         11428
+Slot accuracy: 100.0%
+SER:           0.0%
+Item validity: 100.0%
+Outputs/input: 1.00
+Omitted slots: 0
+OK   First output: total inputs: 1847
+OK   First output: total slots: 11428
+OK   First output: coverage agrees with raw output: 1.0
+OK   First output: mean outputs agrees with raw output: 1.0
+
+--- Best in forest ---
+Mode:          best_output
+Inputs:        1847
+Coverage:      100.0%
+Slots:         11428
+Slot accuracy: 100.0%
+SER:           0.0%
+Item validity: 100.0%
+Outputs/input: 1.00
+Omitted slots: 0
+OK   Best in forest: total inputs: 1847
+OK   Best in forest: total slots: 11428
+OK   Best in forest: coverage agrees with raw output: 1.0
+OK   Best in forest: mean outputs agrees with raw output: 1.0
+
+--- All outputs ---
+Mode:          all_outputs
+Inputs:        1847
+Coverage:      100.0%
+Slots:         11428
+Slot accuracy: 100.0%
+SER:           0.0%
+Item validity: 100.0%
+Outputs/input: 1.00
+Omitted slots: 0
+OK   All outputs: total inputs: 1847
+OK   All outputs: total slots: 11428
+OK   All outputs: coverage agrees with raw output: 1.0
+OK   All outputs: mean outputs agrees with raw output: 1.0
+
+=== Scientific checks ===
+OK   first output preserves every input slot
+OK   best-in-forest preserves every input slot
+OK   every generated realization is slot-complete
+
+=== Result ===
+OK: benchmark output is internally consistent
+Entries: 16095
+split	size	entries
+dev	1	392
+dev	2	302
+dev	3	335
+dev	4	312
+dev	5	233
+dev	6	23
+dev	7	22
+test	1	388
+test	2	298
+test	3	331
+test	4	310
+test	5	228
+test	6	24
+test	7	21
+train	1	3115
+train	2	2397
+train	3	2662
+train	4	2493
+train	5	1851
+train	6	188
+train	7	170
+WebNLG extraction invariants: OK
+[TEST] 01_required_sequence
+[ OK ] 01_required_sequence
+[TEST] 02_optional_middle
+[ OK ] 02_optional_middle
+[TEST] 03_optional_final
+[ OK ] 03_optional_final
+[TEST] 04_all_optional_plain
+[ OK ] 04_all_optional_plain
+[TEST] 05_hash_i_optional
+[ OK ] 05_hash_i_optional
+[TEST] 06_hash_ij_alternative
+[ OK ] 06_hash_ij_alternative
+[TEST] 07_hash_optional_alternative
+[ OK ] 07_hash_optional_alternative
+[TEST] 08_all_optional_cross_hash
+[ OK ] 08_all_optional_cross_hash
+[TEST] 09_hyphen_identifiers
+[ OK ] 09_hyphen_identifiers
+[TEST] 10_optionals_around_required
+[ OK ] 10_optionals_around_required
+[TEST] 11_order_chain
+[ OK ] 11_order_chain
+[TEST] 12_order_first_last
+[ OK ] 12_order_first_last
+[TEST] 13_order_by_field
+[ OK ] 13_order_by_field
+[TEST] 14_unordered_permutations
+[ OK ] 14_unordered_permutations
+[TEST] 15_order_with_optionals
+[ OK ] 15_order_with_optionals
+[TEST] 16_guard_feature_filter
+[ OK ] 16_guard_feature_filter
+[TEST] 17_subsume_inherited_variable
+[ OK ] 17_subsume_inherited_variable
+[TEST] 18_arithmetic_and_hyphen_variables
+[ OK ] 18_arithmetic_and_hyphen_variables
+[TEST] 19_without_spaces
+[ OK ] 19_without_spaces
+[TEST] 20_attest_boolean
+[ OK ] 20_attest_boolean
+[TEST] 21_guard_negative_empty
+[ OK ] 21_guard_negative_empty
+[TEST] 22_not_hash_optional
+[ OK ] 22_not_hash_optional
+[TEST] 23_order_optional_alternative
+[ OK ] 23_order_optional_alternative
+[TEST] 24_boolean_logic
+[ OK ] 24_boolean_logic
+[TEST] 25_nested_field_access
+[ OK ] 25_nested_field_access
+[TEST] 26_unification_union
+[ OK ] 26_unification_union
+[TEST] 27_if_comparison_field
+[ OK ] 27_if_comparison_field
+[TEST] 28_arithmetic_min_max_floor
+[ OK ] 28_arithmetic_min_max_floor
+[TEST] 29_deferred_synthesized_child
+[ OK ] 29_deferred_synthesized_child
+[TEST] 30_pairp_feature
+[ OK ] 30_pairp_feature
+[TEST] 31_animal_compacted_lexicon
+[BUILD] 31_animal_compacted_lexicon
+[ OK ] 31_animal_compacted_lexicon
+[TEST] 32_print_functions
+--- /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmp.KJKKaUivjM/32_print_functions.expected.stderr.sorted	2026-08-30 20:44:25
++++ /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmp.KJKKaUivjM/32_print_functions.stderr.sorted	2026-08-30 20:44:25
+@@ -1 +1,3 @@
++ELVEX_METRICS	-	1	0.071	0.002	0.073	0.072	0.002	0.074	3	4	4	2	2	4	6	2	0	2	2	1	2	0	0	3	2	2	1	1	1840
++ELVEX_METRICS_HEADER	sample_id	run	chart_forest_wall_ms	linearization_wall_ms	total_wall_ms	chart_forest_cpu_ms	linearization_cpu_ms	total_cpu_ms	states	chart_items_final	chart_items_inserted	peak_state_items	max_state_final	saturate_calls	saturation_passes	max_passes_per_saturate	normalize_changed_passes	close_changed_passes	shift_calls	lexical_shifts_inserted	reduce_items_processed	synthesized_handoffs	synthesized_feature_fields	forests	packed_nodes	forest_edges	root_forests	enumerated_outputs	process_hwm_rss_kb
+ errline
+[TEST] 33_assign_list
+[ OK ] 33_assign_list
+[TEST] 34_assign_inherited_attribute
+[ OK ] 34_assign_inherited_attribute
+[TEST] 35_assign_synthesized_attribute
+[ OK ] 35_assign_synthesized_attribute
+[TEST] 36_assign_simple_variable
+[ OK ] 36_assign_simple_variable
+[TEST] 37_subsume_feature_structure
+[ OK ] 37_subsume_feature_structure
+[TEST] 38_if_no_else
+[ OK ] 38_if_no_else
+[TEST] 39_if_else
+[ OK ] 39_if_else
+[TEST] 40_deferred_bool_expr
+[ OK ] 40_deferred_bool_expr
+[TEST] 41_logical_expression
+[ OK ] 41_logical_expression
+
+=== Repository hygiene ===
+OK   no generated artifacts, caches, or obsolete benchmark trees are tracked
+OK   ELVEX_COMMIT is a full Git commit: 8073316f445ef3068e1f88f6801d64dd0636b73a
+
+=== git diff --check ===
+OK   git diff --check
+
+=== Python syntax ===
+FAIL Python syntax: benchmark/e2e/scripts/build_real_e2e_grammar.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/build_real_e2e_grammar.py'
+FAIL Python syntax: benchmark/e2e/scripts/make_e2e_factorized_inputs.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_e2e_factorized_inputs.py'
+FAIL Python syntax: benchmark/e2e/scripts/make_latex_table.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_latex_table.py'
+FAIL Python syntax: benchmark/e2e/scripts/select_full_e2e_items.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/select_full_e2e_items.py'
+
+=== Shell syntax ===
+OK   6 tracked shell entry points pass bash -n
+
+=== E2E unit tests ===
+OK   E2E unit tests
+
+=== E2E generated-result consistency ===
+OK   E2E generated-result consistency
+
+=== WebNLG unit tests ===
+OK   WebNLG unit tests
+
+=== WebNLG source pin ===
+OK   WebNLG repository pinned to 587fa698bec705efbefe72a235a6019c2b9b8b6c
+WARN downloaded WebNLG repository is absent; source pin was checked statically
+
+=== WebNLG extraction/data invariants ===
+OK   WebNLG extraction/data invariants
+
+=== WebNLG generated results ===
+OK   WebNLG size 1: 388 inputs, 378 generated, 97.4227% coverage, 0 process failures
+OK   WebNLG size 2: 298 inputs, 286 generated, 95.9732% coverage, 0 process failures
+OK   WebNLG size 3: 331 inputs, 317 generated, 95.7704% coverage, 0 process failures
+FAIL WebNLG user/main.input is absent; rerun ./run inputs 1
+
+=== Controlled support-context artifacts ===
+OK   stored FULL/NO-CONTEXT outputs, formulas, metrics, and saturation counts are mutually consistent
+
+=== Elvex installation / pinned commit ===
+OK   pinned Elvex commit exists in /Users/clement/Elvex
+OK   Elvex checkout HEAD equals ELVEX_COMMIT
+OK   elvex: /usr/local/bin/elvex
+OK   elvexlexicon: /usr/local/bin/elvexlexicon
+
+=== Elvex regression suite ===
+FAIL Elvex regression suite (exit 1)
+
+=== Final result ===
+FAILED: 6 issue(s)
+  - Python syntax: benchmark/e2e/scripts/build_real_e2e_grammar.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/build_real_e2e_grammar.py'
+  - Python syntax: benchmark/e2e/scripts/make_e2e_factorized_inputs.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_e2e_factorized_inputs.py'
+  - Python syntax: benchmark/e2e/scripts/make_latex_table.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_latex_table.py'
+  - Python syntax: benchmark/e2e/scripts/select_full_e2e_items.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/select_full_e2e_items.py'
+  - WebNLG user/main.input is absent; rerun ./run inputs 1
+  - Elvex regression suite (exit 1)
+Warnings: 1
