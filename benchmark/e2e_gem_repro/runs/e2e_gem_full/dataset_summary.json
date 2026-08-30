@@ -1,0 +1,16 @@
+{
+  "inputs": 1847,
+  "total_slots": 11428,
+  "slot_counts": {
+    "area": 1436,
+    "customerRating": 775,
+    "eatType": 1796,
+    "familyFriendly": 1291,
+    "food": 1318,
+    "name": 1844,
+    "near": 1822,
+    "priceRange": 1146
+  },
+  "avg_slots_per_input": 6.1873308067135895,
+  "references": 1847
+}

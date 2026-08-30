@@ -1,0 +1,88 @@
+/************************************************************
+* Full E2E lexicon generated from the selected E2E split.
+* Restaurant and near-place names are treated as domain constants.
+************************************************************/
+
+FORM form;
+
+/*** Subject forms ***/
+"The restaurant" generic_subject [];
+"Blue Spice" name [name:"Blue Spice"];
+"Clowns" name [name:"Clowns"];
+"Cocum" name [name:"Cocum"];
+"Cotto" name [name:"Cotto"];
+"Giraffe" name [name:"Giraffe"];
+"Green Man" name [name:"Green Man"];
+"Loch Fyne" name [name:"Loch Fyne"];
+"Strada" name [name:"Strada"];
+"The Cricketers" name [name:"The Cricketers"];
+"The Mill" name [name:"The Mill"];
+"The Phoenix" name [name:"The Phoenix"];
+"The Plough" name [name:"The Plough"];
+"The Punter" name [name:"The Punter"];
+"The Vaults" name [name:"The Vaults"];
+"The Waterman" name [name:"The Waterman"];
+"The Wrestlers" name [name:"The Wrestlers"];
+"Wildwood" name [name:"Wildwood"];
+"Zizzi" name [name:"Zizzi"];
+
+/*** Clause markers ***/
+"is" copula [];
+"serves" serve_marker [];
+"has" have_marker [];
+"and" coord [];
+
+/*** Slot values ***/
+/** eatType **/
+"a coffee shop" eat_type_value [eatType:"coffee shop"];
+"a pub" eat_type_value [eatType:"pub"];
+"a restaurant" eat_type_value [eatType:"restaurant"];
+
+/** food **/
+"Chinese food" food_value [food:"Chinese"];
+"English food" food_value [food:"English"];
+"Fast food" food_value [food:"Fast food"];
+"French food" food_value [food:"French"];
+"Indian food" food_value [food:"Indian"];
+"Italian food" food_value [food:"Italian"];
+"Japanese food" food_value [food:"Japanese"];
+
+/** priceRange **/
+"cheap" price_value [priceRange:"cheap"];
+"high priced" price_value [priceRange:"high"];
+"less than £20" price_value [priceRange:"less than £20"];
+"moderately priced" price_value [priceRange:"moderate"];
+"more than £30" price_value [priceRange:"more than £30"];
+"£20-25" price_value [priceRange:"£20-25"];
+
+/** area **/
+"in the city centre" area_value [area:"city centre"];
+"by the riverside" area_value [area:"riverside"];
+
+/** near **/
+"near All Bar One" near_value [near:"All Bar One"];
+"near Avalon" near_value [near:"Avalon"];
+"near Burger King" near_value [near:"Burger King"];
+"near Café Rouge" near_value [near:"Café Rouge"];
+"near Café Sicilia" near_value [near:"Café Sicilia"];
+"near Crowne Plaza Hotel" near_value [near:"Crowne Plaza Hotel"];
+"near Express by Holiday Inn" near_value [near:"Express by Holiday Inn"];
+"near Rainbow Vegetarian Café" near_value [near:"Rainbow Vegetarian Café"];
+"near Raja Indian Cuisine" near_value [near:"Raja Indian Cuisine"];
+"near Ranch" near_value [near:"Ranch"];
+"near The Bakers" near_value [near:"The Bakers"];
+"near The Rice Boat" near_value [near:"The Rice Boat"];
+"near The Sorrento" near_value [near:"The Sorrento"];
+
+/** familyFriendly **/
+"not family-friendly" family_value [familyFriendly:"no"];
+"family-friendly" family_value [familyFriendly:"yes"];
+
+/** customerRating **/
+"a customer rating of 1 out of 5" rating_value [customerRating:"1 out of 5"];
+"a customer rating of 3 out of 5" rating_value [customerRating:"3 out of 5"];
+"a customer rating of 5 out of 5" rating_value [customerRating:"5 out of 5"];
+"an average customer rating" rating_value [customerRating:"average"];
+"a high customer rating" rating_value [customerRating:"high"];
+"a low customer rating" rating_value [customerRating:"low"];
+

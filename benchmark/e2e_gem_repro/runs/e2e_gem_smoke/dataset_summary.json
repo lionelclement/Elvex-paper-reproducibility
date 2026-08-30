@@ -1,0 +1,16 @@
+{
+  "inputs": 3,
+  "total_slots": 19,
+  "slot_counts": {
+    "area": 3,
+    "customerRating": 3,
+    "eatType": 3,
+    "familyFriendly": 2,
+    "food": 3,
+    "name": 0,
+    "near": 3,
+    "priceRange": 2
+  },
+  "avg_slots_per_input": 6.333333333333333,
+  "references": 3
+}

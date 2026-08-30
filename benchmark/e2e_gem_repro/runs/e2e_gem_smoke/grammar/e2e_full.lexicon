@@ -1,0 +1,47 @@
+/************************************************************
+* Full E2E lexicon generated from the selected E2E split.
+* Restaurant and near-place names are treated as domain constants.
+************************************************************/
+
+FORM form;
+
+/*** Subject forms ***/
+"The restaurant" generic_subject [@_3s];
+
+/*** Clause markers ***/
+"is" copula [];
+"serves" serve_marker [];
+"has" have_marker [];
+"and" coord [];
+
+/*** Slot values ***/
+/** eatType **/
+"a pub" eat_type_value [eatType:"pub"];
+"a restaurant" eat_type_value [eatType:"restaurant"];
+
+/** food **/
+"Chinese food" food_value [food:"Chinese"];
+"Fast food" food_value [food:"Fast food"];
+"Japanese food" food_value [food:"Japanese"];
+
+/** priceRange **/
+"high priced" price_value [priceRange:"high"];
+"moderately priced" price_value [priceRange:"moderate"];
+
+/** area **/
+"in the city centre" area_value [area:"city centre"];
+"by the riverside" area_value [area:"riverside"];
+
+/** near **/
+"near All Bar One" near_value [near:"All Bar One"];
+"near Café Rouge" near_value [near:"Café Rouge"];
+"near Raja Indian Cuisine" near_value [near:"Raja Indian Cuisine"];
+
+/** familyFriendly **/
+"not family-friendly" family_value [familyFriendly:"no"];
+
+/** customerRating **/
+"a customer rating of 1 out of 5" rating_value [customerRating:"1 out of 5"];
+"a customer rating of 5 out of 5" rating_value [customerRating:"5 out of 5"];
+"a high customer rating" rating_value [customerRating:"high"];
+

@@ -1,0 +1,12 @@
+S → W
+{
+  <$First :: $Rest> = ↑.items;
+  <$Second :: $Tail> = $Rest;
+  ↓1 = [first:$First, second:$Second];
+}
+
+W → word
+{
+  ↓1 = ↑;
+  ⇑ = ⇓1;
+}
