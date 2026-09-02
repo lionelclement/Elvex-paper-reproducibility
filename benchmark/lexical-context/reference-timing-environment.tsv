@@ -1,0 +1,13 @@
+key	value
+timestamp_utc	2026-09-02T15:56:45.025489+00:00
+platform	macOS-14.6.1-arm64-arm-64bit-Mach-O
+machine	arm64
+processor	arm
+physical_memory_bytes	38654705664
+python	3.14.6
+elvex_executable	/usr/local/bin/elvex
+elvex_sha256	abaa97eec8cc2abefb8293046e74b253a851a75e338f0f9a159f8f883066ab06
+elvex_commit_metadata	8073316f445ef3068e1f88f6801d64dd0636b73a
+warmups	2
+repeats	30
+condition_order	balanced six-permutation cycle

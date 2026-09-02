@@ -486,6 +486,10 @@ def main() -> int:
         "Lexical-context result consistency",
         [sys.executable, "benchmark/lexical-context/check_results.py"],
     )
+    run(
+        "Lexical-context timing snapshot consistency",
+        [sys.executable, "benchmark/lexical-context/check_timing_results.py"],
+    )
 
     run("WebNLG unit tests", [sys.executable, "-m", "unittest", "discover", "-s", "benchmark/webnlg/tests", "-v"])
     check_webnlg_pin()

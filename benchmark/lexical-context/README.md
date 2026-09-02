@@ -170,10 +170,9 @@ NO-CONTEXT            108     12        96   11.111
 PRE-SPECIFIED          12     12         0  100.000
 ```
 
-A reference run produced wall-clock totals of approximately 22.950 ms for FULL,
-28.224 ms for NO-CONTEXT, and 18.846 ms for PRE-SPECIFIED. These timings are
-reported only as an example of one run; they should not be expected to match on
-a different machine or build.
+Single-run `wall_ms` values are diagnostic only. The paper reports the repeated
+timing protocol and immutable timing snapshot described below rather than a
+single execution.
 
 The structural interpretation is the important result:
 
@@ -193,11 +192,11 @@ python3 benchmark/lexical-context/check_results.py
 python3 -m unittest discover -s benchmark/lexical-context/tests -v
 ```
 
-The checker verifies the immutable `reference-results.tsv` snapshot: the
-complete 12-case/three-condition design, the nine-verb
-inventory, case-level FULL/PRE-SPECIFIED equivalence, retention of every valid
-output under ablation, and the reported 96 incompatible NO-CONTEXT outputs.
-Machine-dependent timings are intentionally excluded from this static check.
+`check_results.py` verifies the immutable `reference-results.tsv` structural
+snapshot: the complete 12-case/three-condition design, the nine-verb inventory,
+case-level FULL/PRE-SPECIFIED equivalence, retention of every valid output under
+ablation, and the reported 96 incompatible NO-CONTEXT outputs. Timing snapshots
+are checked separately by `check_timing_results.py`.
 
 The top-level validator performs both static and live checks. When `elvex` is
 available on `PATH`, it reruns all 36 condition/case combinations into a
@@ -232,6 +231,34 @@ It writes three ignored, machine-specific files:
 - `timing-summary.tsv`: median, quartiles, IQR, p90, p95, and maximum;
 - `timing-environment.tsv`: platform, Python, executable, commit metadata, and
   run protocol.
+
+Fresh runs intentionally do not overwrite the immutable snapshots used for the
+paper:
+
+- `reference-repeated-results.tsv`: all 90 measured condition-level observations
+  (30 repetitions x 3 conditions);
+- `reference-timing-summary.tsv`: statistics recomputed from those observations;
+- `reference-timing-environment.tsv`: machine, Python, Elvex executable hash,
+  pinned Elvex commit, warm-ups, repetitions, and condition-order protocol.
+
+The paper reports the following values from this committed snapshot:
+
+| Condition | Runs | Median (ms) | p95 (ms) |
+| --- | ---: | ---: | ---: |
+| FULL | 30 | 18.480 | 19.920 |
+| PRE-SPECIFIED | 30 | 18.931 | 19.979 |
+| NO-CONTEXT | 30 | 26.298 | 27.824 |
+
+Validate the stored timing evidence without rerunning Elvex:
+
+```bash
+python3 benchmark/lexical-context/check_timing_results.py
+```
+
+The checker recalculates the timing summary from the 90 raw observations,
+verifies the balanced six-permutation schedule and structural counts for every
+repetition, checks the pinned Elvex commit in the archived environment, and
+verifies the median and p95 values quoted in the paper.
 
 These measurements sum the wall-clock durations of the 12 Elvex invocations in
 each condition. They do not include Python setup or result validation.

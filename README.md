@@ -50,7 +50,9 @@ exact protocol and commands.
 
 Large downloaded datasets, generated inputs, virtual environments, logs, and
 other build artifacts are intentionally not stored in Git; the benchmark
-scripts recreate them locally.
+scripts recreate them locally. Small immutable reference snapshots corresponding
+to quantitative results reported in the paper are committed when needed for
+source-level reproducibility checks.
 
 ## Requirements
 

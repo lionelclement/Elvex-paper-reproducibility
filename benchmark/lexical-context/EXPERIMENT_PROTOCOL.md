@@ -11,7 +11,7 @@ two complementary evaluations:
 2. the repeated binary construction as a secondary scalability stress test.
 
 The committed lexical snapshot already supplies the first layer: 12 distinct
-predicative nouns, nine support verbs, and six semantic classes extracted from
+predicative nouns, nine support verbs, and seven semantic classes extracted from
 the independently maintained `Elvex/test/en-llm` resources.
 
 ## Primary experiment: lexical compatibility
@@ -82,6 +82,8 @@ The result is suitable for a paper claim only if:
   compatible output and no incompatible output;
 - all 12 NO-CONTEXT cases retain the compatible output;
 - the committed `reference-results.tsv` snapshot passes `check_results.py`;
+- the committed timing snapshots pass `check_timing_results.py`, which
+  recomputes the summary statistics from all 30 measured repetitions;
 - a fresh run at the pinned Elvex commit reproduces the structural counts;
 - the source snapshot is reproduced by `extract_cases.py --check`.
 
@@ -92,6 +94,17 @@ For the committed snapshot, the reported structural result is:
 | FULL | 12 | 9 | 12 | 12 | 0 | 100.0 |
 | PRE-SPECIFIED | 12 | 9 | 12 | 12 | 0 | 100.0 |
 | NO-CONTEXT | 12 | 9 | 12 | 108 | 96 | 11.1 |
+
+The committed timing snapshot used for the paper reports:
+
+| Condition | Runs | Median (ms) | p95 (ms) |
+| --- | ---: | ---: | ---: |
+| FULL | 30 | 18.480 | 19.920 |
+| PRE-SPECIFIED | 30 | 18.931 | 19.979 |
+| NO-CONTEXT | 30 | 26.298 | 27.824 |
+
+These machine-dependent values are archived together with all 90 raw
+condition-level measurements and the machine/Elvex provenance metadata.
 
 ## Secondary experiment: search-space stress
 
