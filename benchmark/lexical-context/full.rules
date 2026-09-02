@@ -1,0 +1,49 @@
+// FULL: lexicalizing the predicative noun synthesizes the support-verb
+// specification. The noun is computed before V, although surface order is
+// V Det N. This is the same dependency pattern as paper_support_context,
+// applied to independently curated en-llm lexical entries.
+
+T1 → S {
+    ↓1 = ↑;
+}
+
+S → NP VP dot {
+    [i:$subject, ii:$object];
+    ↓1 = $subject;
+    ↓2 = [OBJECT:$object];
+    ↓3 = [];
+}
+
+NP → proper_noun {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+
+    // The semantic object determines the predicative noun.
+    ↓3 = $object;
+    ↓2 = [HEAD:A];
+
+    // The support is available only after the noun has been lexicalized.
+    deferred (⇓3) {
+        [support:$support] ⊂ ⇓3;
+        ↓1 = $support;
+    }
+}
+
+V → verb {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+Det → det {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+N → noun {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}

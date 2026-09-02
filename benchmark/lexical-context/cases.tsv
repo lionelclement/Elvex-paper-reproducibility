@@ -1,0 +1,13 @@
+case_id	predicate	noun	support	verb	article	prep	arg2_class	pred_class	aktionsart	semantic_valency	fixedness	support_aspect	support_phase	support_stance	support_subjectivity	support_register
+L01	WARNING	warning	GIVE	gives	a	to	human	communication	achievement	three	strong	transfer	neutral	interpersonal	neutral	neutral
+L02	FEAR	fear	HAVE	has	a	of	entity	emotion	state	two	collocational	state	neutral	experiential	neutral	neutral
+L03	MEMORY	memory	HAVE	has	a	of	event	cognition	state	two	collocational	state	neutral	experiential	neutral	neutral
+L04	RECOLLECTION	recollection	HAVE	has	a	of	event	cognition	state	two	collocational	state	neutral	experiential	neutral	neutral
+L05	MISUNDERSTANDING	misunderstanding	HAVE	has	a	with	human	cognition	state	two	collocational	state	neutral	experiential	neutral	neutral
+L06	PROHIBITION	prohibition	IMPOSE	imposes	a	on	entity	deontic	state	two	strong	achievement	bounded	institutional	low	formal
+L07	CRITIQUE	critique	OFFER	offers	a	of	entity	evaluation	state	two	collocational	achievement	bounded	interpersonal	medium	neutral
+L08	RATIONALE	rationale	PROVIDE	provides	a	for	entity	evaluation	state	two	collocational	transfer	bounded	institutional	low	formal
+L09	STANCE	stance	TAKE	takes	a	on	entity	attitude	state	two	strong	bounded	neutral	volitional	neutral	neutral
+L10	VIEWPOINT	viewpoint	ADOPT	adopts	a	on	entity	attitude	state	two	collocational	achievement	inchoative	evaluative	medium	formal
+L11	DIVIDEND	dividend	PAY	pays	a	to	human	economic	event	three	collocational	directed_activity	neutral	evaluative	medium	neutral
+L12	DONATION	donation	MAKE	makes	a	to	human	economic	event	three	collocational	bounded	neutral	agentive	neutral	neutral

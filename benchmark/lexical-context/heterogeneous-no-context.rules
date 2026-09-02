@@ -1,0 +1,119 @@
+// Heterogeneous NO-CONTEXT condition. Nouns remain fixed by their separate
+// semantic inputs, but every support verb is independently available at each
+// position because the synthesized noun context is ignored.
+
+H1 → S {
+    [first:$first];
+    ↓1 = $first;
+}
+
+H2 → S S {
+    [first:$first, second:$second];
+    ↓1 = $first;
+    ↓2 = $second;
+}
+
+H3 → S S S {
+    [first:$first, second:$second, third:$third];
+    ↓1 = $first;
+    ↓2 = $second;
+    ↓3 = $third;
+}
+
+H4 → S S S S {
+    [first:$first, second:$second, third:$third, fourth:$fourth];
+    ↓1 = $first;
+    ↓2 = $second;
+    ↓3 = $third;
+    ↓4 = $fourth;
+}
+
+S → NP VP dot {
+    [i:$subject, ii:$object];
+    ↓1 = $subject;
+    ↓2 = [OBJECT:$object];
+    ↓3 = [];
+}
+
+NP → proper_noun {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:ADOPT];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:GIVE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:HAVE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:IMPOSE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:MAKE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:OFFER];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:PAY];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:PROVIDE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+VP → V Det N {
+    [OBJECT:$object];
+    ↓1 = [HEAD:TAKE];
+    ↓2 = [HEAD:A];
+    ↓3 = $object;
+}
+
+V → verb {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+Det → det {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}
+
+N → noun {
+    ↓1 = ↑;
+    ⇑ = ⇓1;
+}

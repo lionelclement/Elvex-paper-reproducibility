@@ -1,5 +1,5 @@
-Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmpbsdyqt_p/train.csv
-Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmpnqjyqu4k/test.json
+Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmpwy5fjx05/train.csv
+Using verified local source: /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmp09yun722/test.json
 === E2E/GEM dataset ===
 OK   inputs: 1847
 OK   slots: 11428
@@ -73,6 +73,11 @@ OK   every generated realization is slot-complete
 
 === Result ===
 OK: benchmark output is internally consistent
+condition	cases	generated	valid	spurious	valid_%
+FULL	12	12	12	0	100.000
+NO-CONTEXT	12	108	12	96	11.111
+PRE-SPECIFIED	12	12	12	0	100.000
+OK: lexical-context snapshot is internally consistent
 Entries: 16095
 split	size	entries
 dev	1	392
@@ -97,6 +102,35 @@ train	5	1851
 train	6	188
 train	7	170
 WebNLG extraction invariants: OK
+cases: 12
+condition	generated	valid	spurious	valid_%	wall_ms
+FULL	12	12	0	100.000	19.946
+NO-CONTEXT	108	12	96	11.111	26.141
+PRE-SPECIFIED	12	12	0	100.000	18.169
+wrote /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/elvex-lexical-context-validation-esscb2o1/results.tsv
+condition	cases	generated	valid	spurious	valid_%
+FULL	12	12	12	0	100.000
+NO-CONTEXT	12	108	12	96	11.111
+PRE-SPECIFIED	12	12	12	0	100.000
+OK: lexical-context snapshot is internally consistent
+condition	runs	median_ms	q1_ms	q3_ms	iqr_ms	p90_ms	p95_ms	max_ms
+FULL	30	18.730	18.275	19.444	1.169	19.953	20.434	23.744
+NO-CONTEXT	30	26.779	26.156	27.487	1.331	28.055	28.928	30.923
+PRE-SPECIFIED	30	18.787	18.535	20.009	1.474	20.300	20.459	20.502
+wrote /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/elvex-context-extended-l8w29l6u/repeated-results.tsv
+wrote /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/elvex-context-extended-l8w29l6u/timing-summary.tsv
+wrote /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/elvex-context-extended-l8w29l6u/timing-environment.tsv
+condition	N	panels	generated	valid	spurious	valid_%	wall_ms
+FULL	1	9	9	9	0	100.000000	14.622
+FULL	2	9	9	9	0	100.000000	14.983
+FULL	3	9	9	9	0	100.000000	16.307
+FULL	4	9	9	9	0	100.000000	18.467
+NO-CONTEXT	1	9	81	9	72	11.111111	20.090
+NO-CONTEXT	2	9	729	9	720	1.234568	44.720
+NO-CONTEXT	3	9	6561	9	6552	0.137174	376.283
+NO-CONTEXT	4	9	59049	9	59040	0.015242	12142.232
+wrote /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/elvex-context-extended-l8w29l6u/heterogeneous-results.tsv
+OK: 72 heterogeneous condition/panel rows are consistent
 [TEST] 01_required_sequence
 [ OK ] 01_required_sequence
 [TEST] 02_optional_middle
@@ -161,12 +195,7 @@ WebNLG extraction invariants: OK
 [BUILD] 31_animal_compacted_lexicon
 [ OK ] 31_animal_compacted_lexicon
 [TEST] 32_print_functions
---- /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmp.KJKKaUivjM/32_print_functions.expected.stderr.sorted	2026-08-30 20:44:25
-+++ /var/folders/2b/j4vsfqfd0pv1j0sb7jh3w0680000gn/T/tmp.KJKKaUivjM/32_print_functions.stderr.sorted	2026-08-30 20:44:25
-@@ -1 +1,3 @@
-+ELVEX_METRICS	-	1	0.071	0.002	0.073	0.072	0.002	0.074	3	4	4	2	2	4	6	2	0	2	2	1	2	0	0	3	2	2	1	1	1840
-+ELVEX_METRICS_HEADER	sample_id	run	chart_forest_wall_ms	linearization_wall_ms	total_wall_ms	chart_forest_cpu_ms	linearization_cpu_ms	total_cpu_ms	states	chart_items_final	chart_items_inserted	peak_state_items	max_state_final	saturate_calls	saturation_passes	max_passes_per_saturate	normalize_changed_passes	close_changed_passes	shift_calls	lexical_shifts_inserted	reduce_items_processed	synthesized_handoffs	synthesized_feature_fields	forests	packed_nodes	forest_edges	root_forests	enumerated_outputs	process_hwm_rss_kb
- errline
+[ OK ] 32_print_functions
 [TEST] 33_assign_list
 [ OK ] 33_assign_list
 [TEST] 34_assign_inherited_attribute
@@ -185,28 +214,32 @@ WebNLG extraction invariants: OK
 [ OK ] 40_deferred_bool_expr
 [TEST] 41_logical_expression
 [ OK ] 41_logical_expression
+All regression tests passed.
 
 === Repository hygiene ===
 OK   no generated artifacts, caches, or obsolete benchmark trees are tracked
 OK   ELVEX_COMMIT is a full Git commit: 8073316f445ef3068e1f88f6801d64dd0636b73a
 
-=== git diff --check ===
-OK   git diff --check
+=== git diff HEAD --check ===
+OK   git diff HEAD --check
 
 === Python syntax ===
-FAIL Python syntax: benchmark/e2e/scripts/build_real_e2e_grammar.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/build_real_e2e_grammar.py'
-FAIL Python syntax: benchmark/e2e/scripts/make_e2e_factorized_inputs.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_e2e_factorized_inputs.py'
-FAIL Python syntax: benchmark/e2e/scripts/make_latex_table.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_latex_table.py'
-FAIL Python syntax: benchmark/e2e/scripts/select_full_e2e_items.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/select_full_e2e_items.py'
+OK   29 working-tree Python files parse successfully
 
 === Shell syntax ===
-OK   6 tracked shell entry points pass bash -n
+OK   7 working-tree shell entry points pass bash -n
 
 === E2E unit tests ===
 OK   E2E unit tests
 
 === E2E generated-result consistency ===
 OK   E2E generated-result consistency
+
+=== Lexical-context unit tests ===
+OK   Lexical-context unit tests
+
+=== Lexical-context result consistency ===
+OK   Lexical-context result consistency
 
 === WebNLG unit tests ===
 OK   WebNLG unit tests
@@ -222,26 +255,34 @@ OK   WebNLG extraction/data invariants
 OK   WebNLG size 1: 388 inputs, 378 generated, 97.4227% coverage, 0 process failures
 OK   WebNLG size 2: 298 inputs, 286 generated, 95.9732% coverage, 0 process failures
 OK   WebNLG size 3: 331 inputs, 317 generated, 95.7704% coverage, 0 process failures
-FAIL WebNLG user/main.input is absent; rerun ./run inputs 1
+WARN WebNLG user/main.input is absent; generated project-structure check skipped (this file is an ignored single-input scratch artifact, not a benchmark result)
 
 === Controlled support-context artifacts ===
 OK   stored FULL/NO-CONTEXT outputs, formulas, metrics, and saturation counts are mutually consistent
 
-=== Elvex installation / pinned commit ===
-OK   pinned Elvex commit exists in /Users/clement/Elvex
-OK   Elvex checkout HEAD equals ELVEX_COMMIT
+=== Elvex commands ===
 OK   elvex: /usr/local/bin/elvex
+
+=== Lexical-context fresh Elvex run ===
+OK   Lexical-context fresh Elvex run
+
+=== Lexical-context fresh-result consistency ===
+OK   Lexical-context fresh-result consistency
+
+=== Lexical-context repeated timings ===
+OK   Lexical-context repeated timings
+
+=== Lexical-context heterogeneous composition ===
+OK   Lexical-context heterogeneous composition
+
+=== Lexical-context heterogeneous consistency ===
+OK   Lexical-context heterogeneous consistency
 OK   elvexlexicon: /usr/local/bin/elvexlexicon
 
 === Elvex regression suite ===
-FAIL Elvex regression suite (exit 1)
+OK   Elvex regression suite
 
 === Final result ===
-FAILED: 6 issue(s)
-  - Python syntax: benchmark/e2e/scripts/build_real_e2e_grammar.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/build_real_e2e_grammar.py'
-  - Python syntax: benchmark/e2e/scripts/make_e2e_factorized_inputs.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_e2e_factorized_inputs.py'
-  - Python syntax: benchmark/e2e/scripts/make_latex_table.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/make_latex_table.py'
-  - Python syntax: benchmark/e2e/scripts/select_full_e2e_items.py: [Errno 2] No such file or directory: '/Users/clement/Elvex-paper-reproducibility/benchmark/e2e/scripts/select_full_e2e_items.py'
-  - WebNLG user/main.input is absent; rerun ./run inputs 1
-  - Elvex regression suite (exit 1)
-Warnings: 1
+OK with 2 warning(s)
+  - downloaded WebNLG repository is absent; source pin was checked statically
+  - WebNLG user/main.input is absent; generated project-structure check skipped (this file is an ignored single-input scratch artifact, not a benchmark result)

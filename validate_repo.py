@@ -9,6 +9,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Iterable
 
@@ -329,50 +330,103 @@ def check_webnlg_summaries(require_generated: bool) -> None:
         fail(f"partial WebNLG report set present: {present}")
 
 
-def maybe_check_elvex_repo(args: argparse.Namespace) -> None:
-    print("\n=== Elvex installation / pinned commit ===")
-    pinned = (ROOT / "ELVEX_COMMIT").read_text(encoding="utf-8").strip()
-    repo_arg = args.elvex_repo or os.environ.get("ELVEX_REPO")
-    candidate = Path(repo_arg).expanduser() if repo_arg else ROOT.parent / "Elvex"
-    if (candidate / ".git").exists():
-        try:
-            subprocess.run(
-                ["git", "-C", str(candidate), "cat-file", "-e", f"{pinned}^{{commit}}"],
-                check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            ok(f"pinned Elvex commit exists in {candidate}")
-            head = subprocess.check_output(
-                ["git", "-C", str(candidate), "rev-parse", "HEAD"], text=True
-            ).strip()
-            if head == pinned:
-                ok("Elvex checkout HEAD equals ELVEX_COMMIT")
-            elif args.require_pinned_head:
-                fail(f"Elvex HEAD {head} != pinned {pinned}")
-            else:
-                warn(f"Elvex HEAD {head} differs from pinned {pinned}; checkout the pin for an exact rerun")
-        except subprocess.CalledProcessError:
-            fail(f"pinned Elvex commit {pinned} is not available in {candidate}")
-    else:
-        if args.require_pinned_head:
-            fail(f"Elvex Git repository not found at {candidate}")
-        else:
-            warn(f"Elvex Git repository not found at {candidate}; set --elvex-repo to verify the pin")
-
+def check_elvex_commands(args: argparse.Namespace) -> None:
+    print("\n=== Elvex commands ===")
     elvex = shutil.which(os.environ.get("ELVEX_BIN", "elvex"))
     elvexlexicon = shutil.which(os.environ.get("ELVEXLEXICON_BIN", "elvexlexicon"))
-    if elvex and elvexlexicon:
+    if elvex:
         ok(f"elvex: {elvex}")
+        with tempfile.TemporaryDirectory(prefix="elvex-lexical-context-validation-") as directory:
+            fresh_results = Path(directory) / "results.tsv"
+            generated = run(
+                "Lexical-context fresh Elvex run",
+                [
+                    sys.executable,
+                    "benchmark/lexical-context/run_benchmark.py",
+                    "--elvex",
+                    elvex,
+                    "--output",
+                    str(fresh_results),
+                ],
+            )
+            if generated:
+                run(
+                    "Lexical-context fresh-result consistency",
+                    [
+                        sys.executable,
+                        "benchmark/lexical-context/check_results.py",
+                        "--results",
+                        str(fresh_results),
+                    ],
+                )
+        if args.run_extended_context:
+            with tempfile.TemporaryDirectory(prefix="elvex-context-extended-") as directory:
+                extended = Path(directory)
+                repeated_raw = extended / "repeated-results.tsv"
+                timing_summary = extended / "timing-summary.tsv"
+                timing_environment = extended / "timing-environment.tsv"
+                heterogeneous = extended / "heterogeneous-results.tsv"
+                run(
+                    "Lexical-context repeated timings",
+                    [
+                        sys.executable,
+                        "benchmark/lexical-context/run_repeated.py",
+                        "--elvex",
+                        elvex,
+                        "--repeats",
+                        str(args.context_repeats),
+                        "--raw-output",
+                        str(repeated_raw),
+                        "--summary-output",
+                        str(timing_summary),
+                        "--environment-output",
+                        str(timing_environment),
+                    ],
+                )
+                generated = run(
+                    "Lexical-context heterogeneous composition",
+                    [
+                        sys.executable,
+                        "benchmark/lexical-context/run_heterogeneous.py",
+                        "--elvex",
+                        elvex,
+                        "--max-n",
+                        "4",
+                        "--output",
+                        str(heterogeneous),
+                    ],
+                )
+                if generated:
+                    run(
+                        "Lexical-context heterogeneous consistency",
+                        [
+                            sys.executable,
+                            "benchmark/lexical-context/check_heterogeneous_results.py",
+                            "--results",
+                            str(heterogeneous),
+                            "--require-complete",
+                        ],
+                    )
+    elif args.require_elvex or args.run_extended_context:
+        fail(
+            "elvex not found on PATH; install Elvex or set ELVEX_BIN to its executable"
+        )
+    else:
+        warn("elvex not found; fresh lexical-context experiment skipped")
+
+    if elvex and elvexlexicon:
         ok(f"elvexlexicon: {elvexlexicon}")
         run(
             "Elvex regression suite",
             ["bash", "test/run-regression.sh", elvex, elvexlexicon],
         )
     elif args.require_elvex:
-        fail("elvex and/or elvexlexicon not found on PATH")
+        fail(
+            "elvexlexicon not found on PATH; install Elvex or set "
+            "ELVEXLEXICON_BIN to its executable"
+        )
     else:
-        warn("elvex and/or elvexlexicon not found; executable regression suite skipped")
+        warn("elvexlexicon not found; executable regression suite skipped")
 
 
 def main() -> int:
@@ -388,15 +442,19 @@ def main() -> int:
         help="Fail if elvex/elvexlexicon are unavailable; otherwise executable regression tests are optional.",
     )
     ap.add_argument(
-        "--elvex-repo",
-        help="Path to the main Elvex Git checkout. Defaults to $ELVEX_REPO or ../Elvex.",
+        "--run-extended-context",
+        action="store_true",
+        help="Run repeated lexical timings and all heterogeneous context panels.",
     )
     ap.add_argument(
-        "--require-pinned-head",
-        action="store_true",
-        help="Require the main Elvex checkout HEAD to equal ELVEX_COMMIT.",
+        "--context-repeats",
+        type=int,
+        default=30,
+        help="Measured repetitions for --run-extended-context (default: 30).",
     )
     args = ap.parse_args()
+    if args.context_repeats < 2:
+        ap.error("--context-repeats must be at least 2")
 
     try:
         tracked = tracked_files()
@@ -419,6 +477,15 @@ def main() -> int:
         fail("E2E full generated results are absent (benchmark/e2e/runs/full)")
     else:
         warn("E2E full generated results are absent; generated-result consistency check skipped")
+
+    run(
+        "Lexical-context unit tests",
+        [sys.executable, "-m", "unittest", "discover", "-s", "benchmark/lexical-context/tests", "-v"],
+    )
+    run(
+        "Lexical-context result consistency",
+        [sys.executable, "benchmark/lexical-context/check_results.py"],
+    )
 
     run("WebNLG unit tests", [sys.executable, "-m", "unittest", "discover", "-s", "benchmark/webnlg/tests", "-v"])
     check_webnlg_pin()
@@ -443,7 +510,7 @@ def main() -> int:
         )
 
     check_support_artifacts()
-    maybe_check_elvex_repo(args)
+    check_elvex_commands(args)
 
     print("\n=== Final result ===")
     if failures:

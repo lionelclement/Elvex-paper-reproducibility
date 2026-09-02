@@ -24,6 +24,15 @@ synthesized support-verb information.
 
 ### Benchmarks
 
+`benchmark/lexical-context/`
+
+Direct FULL/NO-CONTEXT/PRE-SPECIFIED ablation on 12 independently curated
+predicative-noun constructions and nine support verbs. Unlike the repeated
+binary support-verb stress test, this benchmark evaluates lexical compatibility
+on a snapshot extracted from the English Elvex resources. It also provides a
+30-run timing protocol and balanced heterogeneous panels combining distinct
+constructions for `N=1..4`.
+
 `benchmark/e2e/`
 
 E2E/GEM closed-domain realization benchmark. The pipeline downloads and
@@ -45,7 +54,10 @@ scripts recreate them locally.
 
 ## Requirements
 
-A working installation of Elvex is required.
+A working installation of Elvex is required. The `elvex` and `elvexlexicon`
+commands should be available on `PATH`; alternatively, set `ELVEX_BIN` and
+`ELVEXLEXICON_BIN` to their executable paths. Validation treats Elvex as an
+installed dependency and does not inspect or modify an Elvex source checkout.
 
 See the README files in each experiment directory for exact commands. The E2E
 benchmark uses only Python 3 standard-library modules; WebNLG documents its own
@@ -66,8 +78,21 @@ For a machine on which both complete benchmark runs and Elvex are available:
 python3 validate_repo.py --require-generated --require-elvex
 ```
 
-Add `--require-pinned-head` (and, if necessary, `--elvex-repo PATH`) when the
-Elvex checkout itself must be at exactly the commit recorded in `ELVEX_COMMIT`.
+When `elvex` is available, the validator also reruns the complete 12-case
+FULL/NO-CONTEXT/PRE-SPECIFIED lexical-context ablation in a temporary directory
+and checks its fresh structural results. The committed result snapshot is not
+modified.
+
+Run the repeated timing protocol and heterogeneous composition test in addition
+to the default checks with:
+
+```bash
+python3 validate_repo.py --require-elvex --run-extended-context
+```
+
+`ELVEX_COMMIT` records the Elvex source version used for the published
+experiments. It is provenance metadata; the validator does not require access
+to an Elvex source repository.
 
 ## License
 
