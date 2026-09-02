@@ -1,17 +1,46 @@
-# Benchmarks
+# Benchmarks used in the paper
 
-The paper uses three maintained benchmark pipelines:
+The camera-ready paper reports three maintained benchmark pipelines. They test
+different questions and should not be conflated.
 
-- `e2e/`: E2E/GEM closed-domain realization and slot-preservation evaluation.
-- `webnlg/`: WebNLG v2.1 local RDF realization evaluation.
-- `lexical-context/`: direct FULL/NO-CONTEXT/PRE-SPECIFIED ablation on a
-  curated snapshot of 12 predicative-noun constructions and nine support verbs,
-  with repeated timing and heterogeneous composition protocols.
+## `lexical-context/` — direct mechanism ablation
 
-These directories contain the scripts and hand-maintained resources needed to
-recreate their experiments. Downloaded corpora and generated artifacts are
-excluded from Git and are rebuilt by the documented commands.
+FULL / NO-CONTEXT / PRE-SPECIFIED comparison on 12 curated `Oper1`
+predicative-noun constructions extracted from the English Elvex resources,
+covering nine support verbs.
 
-The former `benchmark-E2E/` development directory has been removed. It mixed
-superseded E2E, WebNLG, lexical-probe, and exploratory resources and is not part
-of the reproducibility protocol reported in the paper.
+The camera-ready structural result is:
+
+```text
+condition       licensed  compatible  spurious  compatible_%
+FULL                  12          12         0         100.0
+PRE-SPECIFIED         12          12         0         100.0
+NO-CONTEXT           108          12        96          11.1
+```
+
+This is the direct empirical test of synthesized support-verb context reuse.
+The directory also contains the repeated timing protocol and heterogeneous
+composition stress test.
+
+## `e2e/` — closed-domain coverage and input preservation
+
+The full E2E/GEM test split is used as a controlled realization benchmark. The
+training split supplies the lexical inventory; the test split is used for
+evaluation only.
+
+The camera-ready result is 1,847/1,847 inputs generated and 11,428/11,428 input
+slots preserved (`100%` coverage, `100%` slot accuracy, `0%` SER).
+
+## `webnlg/` — local RDF realization
+
+The WebNLG v2.1 official test split is restricted to entries containing one to
+three modified RDF triples. The paper reports local generation coverage and
+oracle-style best-of-forest reference overlap. It does **not** claim a full
+RDF-to-text pipeline, leaderboard comparability, or phenomenon-specific
+structural accuracy.
+
+Each benchmark directory contains its exact data provenance, requirements,
+commands, generated artifacts, and expected paper-level results.
+
+Downloaded corpora, generated build products, and virtual environments are
+normally excluded from Git and are recreated by the documented commands.

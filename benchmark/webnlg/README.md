@@ -1,565 +1,248 @@
-# WebNLG → Elvex starter project
+# WebNLG v2.1 local RDF realization benchmark
 
-This project downloads a pinned official WebNLG release, extracts modified RDF triples and their human lexicalisations, builds starter Elvex resources, selects benchmark entries by split and triple count, and creates one Elvex input file per entry.
+This directory reproduces the WebNLG experiment reported in the camera-ready
+Elvex paper. It evaluates **local realization of one-to-three modified RDF
+triples** with explicit Elvex frames and fallback rules.
 
-The project is intentionally conservative. It is a first grammar and lexicon bootstrap, not a complete WebNLG realizer.
+The scope is deliberately narrower than a full WebNLG RDF-to-text system:
+Elvex does not infer arbitrary RDF semantics, global document ordering, or a
+complete discourse plan. The reported reference scores are oracle-style
+best-of-forest diagnostics, not leaderboard-comparable single-output scores.
 
-## macOS / Homebrew
+## Data provenance and benchmark scope
+
+The source repository is pinned in `user/sources.json`:
+
+```text
+https://gitlab.com/shimorina/webnlg-dataset.git
+revision 587fa698bec705efbefe72a235a6019c2b9b8b6c
+```
+
+The benchmark uses:
+
+- WebNLG `release_v2.1/xml`;
+- `modifiedtripleset` / `mtriple` RDF triples;
+- direct `<lex>` elements as sentence references;
+- the official **test** split;
+- native entries containing exactly 1, 2, or 3 modified triples;
+- no splitting of larger entries into artificial one-triple benchmark examples;
+- no triple deduplication or near-duplicate merging before Elvex input
+  generation.
+
+The expected official test-set counts are:
+
+```text
+1 triple: 388 inputs
+2 triples: 298 inputs
+3 triples: 331 inputs
+```
+
+`./run data-check` verifies the release, split, and size invariants. The expected
+number of extracted entries across train/dev/test is 16,095.
+
+## What the paper measures
+
+For each graph size, the batch scorer reports:
+
+- input count;
+- inputs with at least one generated realization;
+- generation coverage;
+- mean compatible realizations per generated input;
+- best-of-forest exact match with any human reference;
+- best-of-forest normalized exact match;
+- mean sentence-level best-of-forest BLEU;
+- mean sentence-level best-of-forest chrF.
+
+These metrics measure **local realization coverage and reference overlap**.
+Although the grammar contains resources for local frame combination, repeated
+entities, typed relatives, and fallback, this table is **not** a
+phenomenon-specific structural-accuracy evaluation.
+
+## Camera-ready results
+
+The expected summaries for the pinned resources are:
+
+| triples | inputs | generated | coverage | mean outputs | exact | norm. exact | BLEU | chrF |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 388 | 378 | 97.4% | 2.44 | 29.9% | 31.2% | 66.58 | 83.44 |
+| 2 | 298 | 286 | 96.0% | 10.37 | 0.0% | 0.0% | 43.60 | 71.56 |
+| 3 | 331 | 317 | 95.8% | 41.23 | 0.0% | 0.0% | 38.44 | 67.60 |
+
+The machine-readable results are written to:
+
+```text
+build/reports/comparison_1_triples.summary.json
+build/reports/comparison_2_triples.summary.json
+build/reports/comparison_3_triples.summary.json
+```
+
+The corresponding per-input reports are
+`build/reports/comparison_<n>_triples.tsv`.
+
+## Requirements
+
+The wrapper requires:
+
+- Python 3.10 or newer;
+- Git for downloading the pinned dataset repository;
+- `elvex` on `PATH` for generation;
+- `elvexlexicon` on `PATH` for compacted-lexicon construction.
+
+Python dependencies are listed in `requirements.txt` (`sacrebleu` for the
+reference-overlap metrics). The `./run` wrapper creates and manages a local
+`.venv`.
+
+On macOS with Homebrew, for example:
 
 ```bash
 brew install python git
 cd benchmark/webnlg
 ./run setup
-./run all
 ```
 
-`./run` never calls `python` directly. It detects `python3`, creates a local `.venv/`, and runs scripts with `.venv/bin/python`.
+## Reproduce the paper benchmark
 
-The Elvex commands `elvex` and `elvexlexicon` are expected to be available in `PATH`.
+From `benchmark/webnlg/`:
 
-## Elvex file layout
+```bash
+./run setup
+./run download
+./run extract
+./run data-check
+./run lexicon
+./run compact
+./run select
+./run inputs 1
+./run inputs 2
+./run inputs 3
+./run validate
+./run compare 1 0
+./run compare 2 0
+./run compare 3 0
+```
 
-Elvex is called with six resource inputs:
+For `compare`, a limit of `0` means **all selected inputs**. The shorter
+`./run all` command is a project bootstrap and prepares the one-triple sample;
+the explicit commands above are the reproducibility protocol for all three
+paper rows.
+
+Generation limits can be overridden when necessary:
+
+```bash
+ELVEX_MAX_ITEMS=200000
+ELVEX_MAX_TIME=60
+ELVEX_PROCESS_TIMEOUT=70
+```
+
+For example:
+
+```bash
+ELVEX_MAX_ITEMS=500000 ./run compare 3 0
+```
+
+## Pipeline artifacts
+
+### Extraction and selection
+
+`./run extract` writes:
 
 ```text
-user/main.macros
-user/main.input
-user/main.rules
-user/main.lexicon
-build/lexicon/main.tbl
-build/lexicon/main.fsa
+data/processed/triples.jsonl
 ```
 
-Important: `elvex` must receive exactly one generation input per command. Therefore `user/main.input` is only the current sample input. The complete WebNLG test sets are split into individual `.input` files.
-
-For native one-triple WebNLG entries:
+`./run select` writes size-specific official-test sequences:
 
 ```text
-build/inputs/simple_triples/
-build/inputs/simple_triples.index.tsv
+build/sequences/1.jsonl
+build/sequences/2.jsonl
+build/sequences/3.jsonl
 ```
 
-For WebNLG entries with 2 triples:
+### Elvex inputs
+
+`./run inputs <n>` creates one Elvex input per WebNLG entry:
 
 ```text
-build/inputs/2_triples/
-build/inputs/2_triples.index.tsv
+build/inputs/simple_triples/   # n = 1
+build/inputs/2_triples/        # n = 2
+build/inputs/3_triples/        # n = 3
 ```
 
-The same pattern is used for 3, 4, 6, ... triples, according to the files available in `build/sequences/`.
+Each directory has an `.index.tsv` carrying source metadata, triples, and human
+references. Concatenated `.input` diagnostics may also be produced for
+inspection; they must not be passed to Elvex as a single generation request.
 
-`user/main.macros` contains feature macros used by rules, local lexicon entries, pattern entries and morphology entries. It is not empty, so `./run compact` and `./run elvex-sample` pass it through `--macros-file`.
+### Lexical resources
 
-`user/main.input` contains one generation input only. `./run inputs <n>` copies the first generated test file into this file as a convenient sample unless `--no-copy-first-to-user` is passed.
-
-`user/main.rules` is only an include file:
-
-```elvex
-#include user/rules/simple_triples.rules
-```
-
-Edit the actual grammar in `user/rules/simple_triples.rules`.
-
-`user/main.lexicon` is also only an include file:
-
-```elvex
-#include user/lexicon/base.lexicon
-#include user/lexicon/generated_determiners.lexicon
-```
-
-Edit closed-class or functional entries in `user/lexicon/base.lexicon`. Generated determiners are written to `user/lexicon/generated_determiners.lexicon`.
-
-Open-class lexical material is written to:
+The generated/open-class compacted-lexicon resources are:
 
 ```text
 user/main.pattern
 user/main.morpho
 ```
 
-All lemmas in `user/main.pattern` and `user/main.morpho` are uppercased and prefixed with `_`, for example `order` becomes `_ORDER`, to avoid collisions with Elvex keywords.
+Hand-maintained additions live in:
 
-`./run compact` runs:
-
-```bash
-elvexlexicon \
-  --compacted-lexicon-file build/lexicon/main \
-  --macros-file user/main.macros \
-  --pattern-file user/main.pattern \
-  --morpho-file user/main.morpho \
-  build
+```text
+user/override.pattern
+user/override.morpho
+user/lexicon/base.lexicon
+user/lexicon/predicate_overrides.tsv
+user/rules/frames.rules
+user/rules/simple_triples.rules
 ```
 
-This creates:
+`./run compact` builds:
 
 ```text
 build/lexicon/main.tbl
 build/lexicon/main.fsa
 ```
 
-## Commands
+using `elvexlexicon` with `user/main.macros`, `user/main.pattern`, and
+`user/main.morpho`.
 
-```bash
-./run download       # download WebNLG sources into data/raw/
-./run extract        # write data/processed/triples.jsonl
-./run data-check     # verify release/split/size invariants and print counts
-./run lexicon        # write user/main.pattern, user/main.morpho and generated local lexicon files
-./run compact        # build build/lexicon/main.tbl and .fsa with elvexlexicon
-./run select         # write build/sequences/<n>.jsonl
-./run inputs         # same as ./run inputs 1
-./run inputs 2       # write one .input file per WebNLG entry with 2 triples
-./run validate       # check the expected files
-./run all            # run download, extract, lexicon, compact, select, inputs 1, validate
-./run elvex-sample   # call elvex on user/main.input
-./run elvex-one PATH # call elvex on a single .input file
-./run elvex-tests 2 20  # call elvex on 20 generated tests with 2 triples
-./run compare-one 1 1   # show Elvex output beside WebNLG references for one native 1-triple test entry
-./run compare-one 2 1   # same for the first 2-triple test
-./run compare 1 20      # write a comparison report for 20 native 1-triple test entries
-./run compare 2 20      # write a comparison report for 20 two-triple tests
-```
+## Inspect individual examples
 
-## Benchmark data protocol
-
-The default benchmark is deliberately narrow and reproducible:
-
-- official `webnlg-dataset` repository, pinned by commit in `user/sources.json`;
-- WebNLG `release_v2.1/xml` only (the repository also contains duplicate JSON and other releases);
-- `modifiedtripleset` / `mtriple` only, because these are the triples paired with the human lexicalisations;
-- direct `<lex>` elements only; nested referring-expression `<reference>` annotations are not sentence references;
-- official `test` split by default;
-- native WebNLG entries of official sizes 1, 2, and 3.
-- no triple deduplication or near-duplicate merging before Elvex input generation.
-
-`./run extract` writes all train/dev/test entries from this one release to `data/processed/triples.jsonl`. Run `./run data-check` immediately afterwards to verify the source, exact release counts, split, and official-size invariants. The expected extracted total is 16,095 entries; the official test split contains 388 size-1, 298 size-2, and 331 size-3 entries. `./run select` then selects the official test entries of sizes 1--3:
-
-```text
-build/sequences/1.jsonl   # native WebNLG test entries with size=1
-build/sequences/2.jsonl   # native WebNLG test entries with size=2
-build/sequences/3.jsonl   # native WebNLG test entries with size=3
-```
-
-Do not create the paper's 1-triple benchmark by splitting larger entries into isolated triples: the human lexicalisation of a multi-triple entry is not a gold reference for one component triple. A development-only atomic view remains available with `./run select --atomic`; its isolated rows deliberately have no gold references.
-
-`./run inputs <n>` consumes `build/sequences/<n>.jsonl` and writes one `.input` file per row.
-
-Examples:
-
-```bash
-./run inputs 1
-./run inputs 2
-./run inputs 3 --limit 100
-```
-
-Output directories:
-
-```text
-build/inputs/simple_triples/      # n = 1
-build/inputs/2_triples/           # n = 2
-build/inputs/3_triples/           # n = 3
-```
-
-Each `.input` file contains exactly one Elvex input. The `.index.tsv` file beside each input directory stores metadata, source triples, and WebNLG references.
-
-A diagnostic concatenation is also written, for example:
-
-```text
-build/inputs/2_triples.input
-```
-
-This concatenated file is for inspection only. Do not pass it to `elvex` directly.
-
-## Comparing Elvex output with WebNLG references
-
-Generate inputs first:
-
-```bash
-./run inputs 1
-./run inputs 2
-```
-
-Compare one test:
+Run one selected input and show its triples, references, generated outputs, and
+scores:
 
 ```bash
 ./run compare-one 1 1
 ./run compare-one 2 1
+./run compare-one 3 1
 ```
 
-The output contains:
-
-```text
-INPUT FILE
-ENTRY
-TRIPLE(S)
-ELVEX OUTPUT
-WEBNLG REFERENCE(S)
-ELVEX STDERR, when present
-```
-
-Batch comparison:
+Run a small diagnostic batch:
 
 ```bash
 ./run compare 1 20
 ./run compare 2 20
+./run compare 3 20
 ```
 
-Reports are written to:
-
-```text
-build/reports/comparison_1_triples.tsv
-build/reports/comparison_2_triples.tsv
-```
-
-Raw Elvex outputs and logs are written to:
-
-```text
-build/outputs/compare/
-build/logs/elvex/
-```
-
-## Generated input examples
-
-A single-triple input has this form:
-
-```elvex
-// Alfa Romeo 164 | assembly | Milan
-S [HEAD:webnlg_simple, pattern:svo, s:[HEAD:Alfa_Romeo_164], p:[HEAD:assembly], o:[HEAD:Milan]]
-```
-
-A two-triple input has this form:
-
-```elvex
-// Aarhus | leaderName | Jacob Bundsgaard
-// Aarhus | country | Denmark
-S [HEAD:webnlg_sequence, size:2, triples:<[pattern:cop_nom, s:[HEAD:Aarhus], p:[HEAD:leader_Name], o:[HEAD:Jacob_Bundsgaard]], [pattern:svo, s:[HEAD:Aarhus], p:[HEAD:country], o:[HEAD:Denmark]]>]
-```
-
-The initial grammar focuses on `webnlg_simple`. Multi-triple inputs are generated so they can be tested and progressively supported by new grammar rules.
-
-## Generated pattern format
-
-`user/main.pattern` uses tab-separated fields:
-
-```text
-LEXEME<TAB>POS<TAB>LEMMA<TAB>features_1
-```
-
-Example:
-
-```text
-CHAUVE_SOURIS	noun	_CHAUVE_SOURIS	[@f]
-```
-
-## Generated morphology format
-
-`user/main.morpho` uses tab-separated fields:
-
-```text
-FORM<TAB>POS<TAB>LEMMA<TAB>features_2
-```
-
-Example:
-
-```text
-chauve souris	noun	_CHAUVE_SOURIS	[@s]
-chauves souris	noun	_CHAUVE_SOURIS	[@p]
-```
-
-The compacted lexicon combines entries that share `POS` and `LEMMA`:
-
-```text
-POS#LEXEME => FORM features_1 unified with features_2
-```
-
-## First grammar scope
-
-The first grammar handles single triples with three patterns:
-
-```text
-svo       subject verb object
-cop_adj   subject copula adjective
-cop_nom   subject copula noun
-```
-
-Generated single-triple inputs have this form:
-
-```elvex
-S [HEAD:webnlg_simple, pattern:svo, s:[HEAD:...], p:[HEAD:...], o:[HEAD:...]]
-```
-
-Predicate pattern guesses are written to:
-
-```text
-user/lexicon/predicate_suggestions.tsv
-```
-
-Correct them by editing:
-
-```text
-user/lexicon/predicate_overrides.tsv
-```
-
-Then rerun:
-
-```bash
-./run lexicon
-./run compact
-./run inputs 1
-./run inputs 2
-```
-
-## Direct Elvex command
-
-After `./run all`, the equivalent direct command for the current sample is:
-
-```bash
-elvex \
-  --macros-file user/main.macros \
-  --rules-file user/main.rules \
-  --lexicon-file user/main.lexicon \
-  --compacted-lexicon-file build/lexicon/main \
-  --input-file user/main.input \
-  --max-length 40 --first
-```
-
-To run a generated WebNLG test directly, replace `user/main.input` with one file from `build/inputs/simple_triples/` or `build/inputs/2_triples/`.
-
-### Nominal relation overrides
-
-Predicate-specific lexicalisations can be edited in `user/lexicon/predicate_overrides.tsv`.
-For example, `leaderName` is configured as a nominal relation:
-
-```tsv
-predicate	pattern	lexeme	form	prep
-leaderName	rel_nom	leader_Name	leader	of
-```
-
-This generates compacted-lexicon entries where the predicate is selected through
-`HEAD:leader_Name`, but the produced noun is `leader`. The grammar then has two
-realisation patterns:
-
-```text
-The leader of X is Y.
-Y is the leader of X.
-```
-
-The `prep` column is used as the `pcas` feature for the relational noun phrase.
-
-## Predicate-specific frames
-
-The project now distinguishes direct verbal predicates from predicates that
-need a paraphrastic frame.
-
-Direct predicates can remain in the generic fallback grammar. For example, a
-predicate that behaves like `eat(X,Y) -> X eats Y` can use the generic SVO
-path.
-
-Predicates that do not correspond to an immediate subject-verb-object lexical
-entry should get an explicit frame in:
-
-```text
-user/rules/frames.rules
-```
-
-The lexical material required by the frame should be added in pure
-`elvexlexicon` format:
-
-```text
-user/override.pattern
-user/override.morpho
-```
-
-These files are appended to the generated files during `./run lexicon`:
-
-```text
-user/override.pattern + generated entries -> user/main.pattern
-user/override.morpho  + generated entries -> user/main.morpho
-```
-
-Example for `leaderName(X,Y)`:
-
-```text
-user/override.pattern:
-_LEADER<TAB>noun<TAB>_LEADER<TAB>[HEAD:_LEADER, frame_for:leader_Name]
-
-user/override.morpho:
-leader<TAB>noun<TAB>_LEADER<TAB>[@s]
-```
-
-The frame itself is written in Elvex rules:
-
-```elvex
-SENT -> NP cop NP {
-  [HEAD:leader_Name, i:$I, ii:$II] <<< ↑;
-  ↓1 = [HEAD:_LEADER, @def, @s, ofObj:$I];
-  ↓2 = [@present, @indicative, @_3s];
-  ↓3 = $II;
-  ⇑ = ⇓3;
-}
-```
-
-When `./run inputs 1` sees a predicate that has a frame in
-`user/rules/frames.rules`, it generates a direct frame input such as:
-
-```elvex
-S [HEAD:leader_Name, i:[HEAD:Aarhus], ii:[HEAD:Jacob_Bundsgaard]]
-```
-
-For all other predicates, it keeps the older generic fallback input:
-
-```elvex
-S [HEAD:webnlg_simple, pattern:svo, s:[HEAD:X], p:[HEAD:P], o:[HEAD:Y]]
-```
-
-## Elvex item limit during comparisons
-
-The wrapper now passes `--max-items` to Elvex for sample, single-input and batch comparison commands. The default is:
-
-```bash
-ELVEX_MAX_ITEMS=200000
-```
-
-Override it when needed:
-
-```bash
-ELVEX_MAX_ITEMS=500000 ./run compare-one 1 1
-```
-
-The `leader_Name` frame also avoids a recursive `N -> N PP` construction for `the leader of X`; it uses a direct NP rule for `ofObj` to reduce the number of generated items.
-
-### Debugging a hanging Elvex comparison
-
-`./run compare-one <n> <id>` prints the input file, WebNLG triple(s), and WebNLG reference(s) before launching `elvex`. This makes it possible to see which example is being tested even if the grammar search is too broad.
-
-Elvex is run with bounded search parameters. You can override them:
-
-```bash
-ELVEX_MAX_TIME=3 ELVEX_PROCESS_TIMEOUT=5 ./run compare-one 1 1
-ELVEX_MAX_ITEMS=50000 ./run compare-one 1 1
-```
-
-`ELVEX_MAX_TIME` is passed to `elvex --max-time`. `ELVEX_PROCESS_TIMEOUT` is a Python-side safety timeout that kills the process if it does not return.
-
-## Predicate-specific direct frames
-
-For predicates that are not immediate verbal relations, prefer direct Elvex frames in `user/rules/frames.rules`.
-
-For example, `leaderName(X,Y)` is handled as a dedicated frame rather than as a generic copular nominal relation:
-
-```elvex
-SENT -> det noun prep noun cop noun {
-  [HEAD:leader_Name, i:$I, ii:$II] <<< ↑;
-  ↓1 = [@def];
-  ↓2 = [HEAD:_LEADER, @s];
-  ↓3 = [pcas:of];
-  ↓4 = $I;
-  ↓5 = [@present, @indicative, @_3s];
-  ↓6 = $II;
-  ⇑ = ⇓6;
-}
-```
-
-This direct form avoids unnecessary exploration through generic NP recursion and keeps the WebNLG-scoring variant first: `The leader of X is Y`.
-
-### v11 note: definite determiner in `leaderName` frames
-
-The `leaderName` frame now uses the normal `det` category. The base determiner lexicon explicitly marks determiners with `def:true` or `def:false`, so unification excludes indefinite determiners when a frame requires `[def:true]`. This prevents outputs such as `an leader` while avoiding ad-hoc determiner categories:
-
-```text
-The leader of Aarhus is Jacob Bundsgaard.
-Jacob Bundsgaard is the leader of Aarhus.
-```
-
-## Comparing all Elvex outputs with WebNLG references
-
-`compare-one` and `compare` run Elvex without `--first` by default. This keeps every generated realization and compares all of them with the WebNLG references. Batch comparison also writes a `.summary.json` file containing the quantities used in the paper table: input count, generated-input count, coverage, mean compatible realizations per generated input, exact/normalized exact-match percentages, and mean sentence-level best-of-forest BLEU/chrF.
-
-```bash
-./run compare-one 1 1
-./run compare 1 100
-```
-
-The comparison reports both a strict first-output score and a best-of-N diagnostic score:
-
-- `first_exact_match`: whether the first Elvex output exactly matches a WebNLG reference.
-- `best_exact_match`: whether any Elvex output exactly matches a WebNLG reference.
-- `best_normalized_match`: whether any Elvex output matches a reference after light normalization of case, whitespace and spaces before punctuation. This is only a development diagnostic, not an official WebNLG metric.
-
-The batch report is written to:
-
-```text
-build/reports/comparison_<n>_triples.tsv
-```
-
-For each input, all generated outputs are also stored in:
-
-```text
-build/outputs/compare/<input-stem>.out
-build/outputs/compare/<input-stem>.all.tsv
-```
-
-To force the old first-output behavior for diagnosis:
-
-```bash
-.venv/bin/python scripts/compare_elvex.py one 1 1 --first-only
-```
-
-### Final surface post-processing
-
-Elvex lexical resources now keep function words lowercase. Proper nouns keep their own capitalization. Final sentence capitalization and punctuation spacing are applied after generation by:
-
-```bash
-./run postprocess < raw-elvex-output.txt
-```
-
-The comparison commands apply this post-processing automatically before matching WebNLG references. Raw Elvex outputs are still saved as `build/outputs/compare/*.raw.out`; finalized outputs are saved as `build/outputs/compare/*.out`.
-
-For definite descriptions, demonstratives are not selected by default. A frame asking for a plain definite description should pass features such as `@def, dem:false, poss:false, part:false`; this excludes `this/that/these/those` while keeping `the`.
-
-
-### Predicate frame: runwayLength
-
-`runwayLength(X,Y)` is handled by an explicit frame in `user/rules/frames.rules`:
-
-```text
-The runway length at X is Y meters.
-```
-
-Numeric values are normalized when inputs are generated. Both typed RDF literals and raw numeric objects are converted to Elvex value features:
-
-```elvex
-ii:[value:"2777.0", datatype:xsd_double]   // from "2777.0"^^xsd:double
-ii:[value:"2777.0", datatype:number]       // from 2777.0
-```
-
-Numbers are not added to the compacted lexicon as `proper_noun` entries. The local lexicon realizes them with variable lexical entries:
-
-```elvex
-"$NUMBER"        NUMBER         [value:$NUMBER];
-"$NUMBER meters" NUMBER_METERS  [value:$NUMBER];
-```
-
-
-### Numeric values and units
-
-Numeric WebNLG objects are no longer compacted as `proper_noun` entries. The input generator recognizes RDF typed numbers, raw numbers, and compact number-unit strings such as `3.8 m` or `1.2 (litres)`. These are passed to Elvex as dynamic features, for example `[value:"3.8", unit:"m", datatype:number_unit]`, and realized by local lexicon entries such as `"$NUMBER" NUMBER [value:$NUMBER];` and `"$NUMBER $UNIT" NUMBER_UNIT [value:$NUMBER, unit:$UNIT];`.
-
-
-## Numeric lexical entries are guarded
-
-Numeric local entries such as `"$NUMBER" NUMBER [value:$NUMBER];` and `"$NUMBER $UNIT" NUMBER_UNIT [value:$NUMBER, unit:$UNIT];` are only available to `NP` when the inherited feature structure already contains `value` (and `unit` for `NUMBER_UNIT`). This prevents unconstrained variables from producing `?` outputs in ordinary named-entity positions.
-
-### v21 note
-
-Numeric NP rules now use true Elvex guards (`[value:$Value];` and `[value:$Value, unit:$Unit];`) rather than subsumption statements, so `NUMBER` and `NUMBER_UNIT` cannot realize non-numeric noun phrases.
-
-### v22 predicate frames
-
-This version adds explicit Elvex frames for the first empty-output predicates seen in the one-triple comparison log:
-
-- `location(X,Y)` and `country(X,Y)` -> `X is located in Y.`
-- `runwayName(X,Y)` and `runwayDesignation(X,Y)` -> `The runway name of X is Y.`
-- `faa(X,Y)` and `locationIdentifier(X,Y)` -> `The location identifier of X is Y.`
-- `1st_runway_LengthFeet(X,Y)` and `r1LengthF(X,Y)` -> `The first runway length in feet of X is Y.`
-- `city(X,Y)` -> `X serves Y.`
-
-The additions are in `user/rules/frames.rules`, with the corresponding lexical resources in `user/override.pattern`, `user/override.morpho`, and `user/lexicon/base.lexicon`. No new `./run` command is introduced.
+Raw and finalized outputs are retained under `build/outputs/compare/`, with
+Elvex logs under `build/logs/elvex/`.
+
+## Output normalization and reference scores
+
+Elvex resources keep ordinary function words lowercase and preserve proper-name
+capitalization. The comparison pipeline applies final sentence capitalization
+and punctuation-spacing normalization before reference matching. Raw outputs
+are retained separately from finalized outputs.
+
+`best_normalized_match` performs only light normalization of case, whitespace,
+and spaces before punctuation. It is a development/reference-overlap
+diagnostic, not an official WebNLG metric.
+
+BLEU and chrF are computed with SacreBLEU at sentence level and the best score
+among the generated forest realizations is retained for each generated input.
+
+## Important interpretation
+
+The grammar includes explicit predicate frames, local combination rules,
+repeated-entity handling, relative constructions, numeric realization, and
+controlled fallback. However, the camera-ready experiment reports aggregate
+coverage and reference overlap only. It should therefore be interpreted as a
+**local RDF realization test**, not as evidence that each listed structural
+phenomenon has been independently measured for correctness.
