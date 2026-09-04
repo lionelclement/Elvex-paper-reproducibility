@@ -1,0 +1,13 @@
+predicate	class	aktionsart	semantic_valency	fixedness	arg2_restriction
+WARNING	communication	achievement	three	strong	human
+FEAR	emotion	state	two	collocational	entity
+MEMORY	cognition	state	two	collocational	event
+RECOLLECTION	cognition	state	two	collocational	event
+MISUNDERSTANDING	cognition	state	two	collocational	human
+PROHIBITION	deontic	state	two	strong	entity
+CRITIQUE	evaluation	state	two	collocational	entity
+RATIONALE	evaluation	state	two	collocational	entity
+STANCE	attitude	state	two	strong	entity
+VIEWPOINT	attitude	state	two	collocational	entity
+DIVIDEND	economic	event	three	collocational	human
+DONATION	economic	event	three	collocational	human

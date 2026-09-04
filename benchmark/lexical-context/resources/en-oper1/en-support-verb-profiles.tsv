@@ -1,0 +1,10 @@
+realizer	lexical_aspect	phase	stance	subjectivity	register
+GIVE	transfer	neutral	interpersonal	neutral	neutral
+HAVE	state	neutral	experiential	neutral	neutral
+IMPOSE	achievement	bounded	institutional	low	formal
+OFFER	achievement	bounded	interpersonal	medium	neutral
+PROVIDE	transfer	bounded	institutional	low	formal
+TAKE	bounded	neutral	volitional	neutral	neutral
+ADOPT	achievement	inchoative	evaluative	medium	formal
+PAY	directed_activity	neutral	evaluative	medium	neutral
+MAKE	bounded	neutral	agentive	neutral	neutral

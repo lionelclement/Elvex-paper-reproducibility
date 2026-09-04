@@ -1,0 +1,23 @@
+// Minimal morphology for the en-oper1 reproducibility resource.
+// Columns: form<TAB>pos<TAB>lemma<TAB>features
+warning	common_noun	WARNING	@s
+fear	common_noun	FEAR	@s
+memory	common_noun	MEMORY	@s
+recollection	common_noun	RECOLLECTION	@s
+misunderstanding	common_noun	MISUNDERSTANDING	@s
+prohibition	common_noun	PROHIBITION	@s
+critique	common_noun	CRITIQUE	@s
+rationale	common_noun	RATIONALE	@s
+stance	common_noun	STANCE	@s
+viewpoint	common_noun	VIEWPOINT	@s
+dividend	common_noun	DIVIDEND	@s
+donation	common_noun	DONATION	@s
+gives	verb	GIVE	vtense:present @_3s
+has	verb	HAVE	vtense:present @_3s
+imposes	verb	IMPOSE	vtense:present @_3s
+offers	verb	OFFER	vtense:present @_3s
+provides	verb	PROVIDE	vtense:present @_3s
+takes	verb	TAKE	vtense:present @_3s
+adopts	verb	ADOPT	vtense:present @_3s
+pays	verb	PAY	vtense:present @_3s
+makes	verb	MAKE	vtense:present @_3s

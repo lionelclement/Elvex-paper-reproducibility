@@ -11,6 +11,7 @@ HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 
 import check_results  # noqa: E402
+import extract_cases  # noqa: E402
 import check_heterogeneous_results  # noqa: E402
 import run_benchmark  # noqa: E402
 import run_heterogeneous  # noqa: E402
@@ -18,6 +19,11 @@ import run_repeated  # noqa: E402
 
 
 class LexicalContextSnapshotTests(unittest.TestCase):
+    def test_en_oper1_resource_reproduces_committed_cases(self):
+        resource = HERE / "resources" / "en-oper1"
+        rendered = extract_cases.render(extract_cases.extract(resource))
+        self.assertEqual(rendered, (HERE / "cases.tsv").read_text(encoding="utf-8"))
+
     @classmethod
     def setUpClass(cls):
         cls.cases = check_results.read_tsv(HERE / "cases.tsv")

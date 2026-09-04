@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract the lexical-context benchmark from Elvex/test/en-llm.
+"""Extract the lexical-context benchmark from the committed en-oper1 resource.
 
 The benchmark deliberately uses a homogeneous syntactic frame so that the
 ablation isolates lexical/contextual constraints rather than unrelated grammar
@@ -10,7 +10,7 @@ variation.  Cases are curated Oper1 support constructions that:
   * have exactly one curated Oper1 support realization for the predicate.
 
 The resulting snapshot is committed in this repository.  --check verifies that
-it still matches a local Elvex checkout.
+it still matches the dedicated resource committed beside the benchmark.
 """
 from __future__ import annotations
 
@@ -69,8 +69,8 @@ def verb_3sg(morph, lemma: str) -> str:
     raise ValueError(f"no present 3sg verb morphology for {lemma}")
 
 
-def extract(elvex_root: Path):
-    root = elvex_root / "test" / "en-llm"
+def extract(resource_root: Path):
+    root = resource_root
     lf = read_tsv(root / "en-lexical-functions.tsv")
     pred_profiles = {
         row["predicate"]: row for row in read_tsv(root / "en-predicative-nouns.tsv")
@@ -102,7 +102,7 @@ def extract(elvex_root: Path):
         pred = pred_profiles[predicate]
         spr = support_profiles[support]
         noun = noun_form(morph, predicate)
-        # a/an is intentionally outside the grammar under test (as in en-llm);
+        # a/an is intentionally outside the grammar under test;
         # keep only consonant-initial nouns so a fixed indefinite article is grammatical.
         if noun[:1].lower() in "aeiou":
             continue
@@ -144,12 +144,17 @@ def render(rows) -> str:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--elvex-root", type=Path, default=Path("../Elvex"))
+    ap.add_argument(
+        "--resource-root",
+        type=Path,
+        default=Path(__file__).with_name("resources") / "en-oper1",
+        help="path to the dedicated en-oper1 lexical resource",
+    )
     ap.add_argument("--output", type=Path, default=Path(__file__).with_name("cases.tsv"))
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args()
 
-    text = render(extract(args.elvex_root.resolve()))
+    text = render(extract(args.resource_root.resolve()))
     if args.check:
         current = args.output.read_text(encoding="utf-8")
         if current != text:

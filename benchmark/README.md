@@ -6,8 +6,9 @@ different questions and should not be conflated.
 ## `lexical-context/` — direct mechanism ablation
 
 FULL / NO-CONTEXT / PRE-SPECIFIED comparison on 12 curated `Oper1`
-predicative-noun constructions extracted from the English Elvex resources,
-covering nine support verbs.
+predicative-noun constructions defined in the dedicated `en-oper1` resource,
+covering nine support verbs. The resource is committed in
+`lexical-context/resources/en-oper1/`.
 
 The camera-ready structural result is:
 

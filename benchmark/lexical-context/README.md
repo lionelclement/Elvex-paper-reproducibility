@@ -1,10 +1,10 @@
 # Lexical-context ablation
 
-This benchmark evaluates synthesized-context reuse on lexical dependencies taken
-from the English Elvex grammar in `Elvex/test/en-llm`. It complements the
-synthetic `2^N`/`4^N` support-verb stress test used in the paper: the synthetic
-test isolates search-space growth, whereas this benchmark asks whether the same
-mechanism controls independently curated lexical choices.
+This benchmark evaluates synthesized-context reuse on the dedicated English
+`en-oper1` lexical resource committed in `resources/en-oper1/`. It complements
+the synthetic `2^N`/`4^N` support-verb stress test used in the paper: the
+synthetic test isolates search-space growth, whereas this benchmark asks whether
+the same mechanism controls the curated support-verb relations in that resource.
 
 ## Research question
 
@@ -57,17 +57,22 @@ Examples in the source data include:
 - `DIVIDEND` → `PAY`
 - `DONATION` → `MAKE`
 
-The snapshot is extracted from the following files in `Elvex/test/en-llm`:
+The source resource is committed with the benchmark:
+
+`benchmark/lexical-context/resources/en-oper1/`
+
+It contains:
 
 - `en-lexical-functions.tsv`
 - `en-predicative-nouns.tsv`
 - `en-support-verb-profiles.tsv`
 - `en.morpho`
 
-The extraction keeps unique curated `Oper1` relations with an explicit
+`extract_cases.py` normalizes that resource into the committed `cases.tsv`
+snapshot. It keeps unique curated `Oper1` relations with an explicit
 predicative-noun profile, an indefinite nominal predicate, and an overt
 prepositional second argument. These restrictions provide a homogeneous sample
-while preserving independently curated lexical differences.
+for the support-verb propagation experiment.
 
 `cases.tsv` also records preposition, semantic-valency, argument restriction,
 Aktionsart, fixedness, and support-verb profile information. These properties
@@ -102,12 +107,10 @@ bash benchmark/lexical-context/run.sh --elvex /path/to/elvex
 ## Verify the lexical snapshot
 
 From the root of `Elvex-paper-reproducibility`, verify that the committed cases
-still match a sibling Elvex checkout:
+still match the dedicated `en-oper1` resource:
 
 ```bash
-python3 benchmark/lexical-context/extract_cases.py \
-  --elvex-root ../Elvex \
-  --check
+python3 benchmark/lexical-context/extract_cases.py --check
 ```
 
 Expected output for the version used in the paper:
@@ -116,16 +119,15 @@ Expected output for the version used in the paper:
 OK: 12 lexical-context cases
 ```
 
-If `cases.tsv` is intentionally refreshed from a newer Elvex checkout, omit
-`--check`:
+If the committed `en-oper1` resource is intentionally edited, omit `--check`
+to regenerate `cases.tsv`:
 
 ```bash
-python3 benchmark/lexical-context/extract_cases.py \
-  --elvex-root ../Elvex
+python3 benchmark/lexical-context/extract_cases.py
 ```
 
-A changed snapshot should be reviewed before using it to reproduce the reported
-numbers.
+A changed resource or snapshot should be reviewed before using it to reproduce
+the reported numbers.
 
 ## Smoke test
 
@@ -382,9 +384,9 @@ questions.
 
 The synthetic experiment deliberately repeats independent binary dependencies
 and is useful for measuring controlled growth of the chart and shared forest.
-The lexical-context benchmark instead uses independently curated lexical
-relations from `en-llm` and asks whether synthesized-context reuse prevents
-lexically incompatible cross-frame realizations.
+The lexical-context benchmark instead uses the dedicated `en-oper1` lexical
+resource and asks whether synthesized-context reuse prevents lexically
+incompatible cross-frame realizations.
 
 The lexical benchmark should therefore be read as the linguistically grounded
 ablation, and the synthetic experiment as a separate search-space stress test.
@@ -406,6 +408,5 @@ export ELVEX_BIN=~/Elvex/bin/elvex
 bash benchmark/lexical-context/run.sh
 ```
 
-If snapshot verification reports that `cases.tsv` is out of date, first check
-that the Elvex checkout corresponds to the commit intended for the
-reproducibility package before regenerating the file.
+If snapshot verification reports that `cases.tsv` is out of date, inspect the
+committed `resources/en-oper1/` changes before regenerating the file.

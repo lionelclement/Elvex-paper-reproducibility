@@ -35,8 +35,10 @@ separate from the direct lexical adequacy ablation below.
 `benchmark/lexical-context/`
 
 Direct FULL / NO-CONTEXT / PRE-SPECIFIED ablation on 12 curated `Oper1`
-predicative-noun constructions extracted from the English Elvex resources,
-covering nine distinct support verbs. The directory also contains the 30-run
+predicative-noun constructions defined in the dedicated `en-oper1` resource,
+covering nine distinct support verbs. The resource is committed under
+`benchmark/lexical-context/resources/en-oper1/`; the directory also contains
+the 30-run
 timing protocol, immutable reference snapshots, and a heterogeneous
 nine-support stress test.
 

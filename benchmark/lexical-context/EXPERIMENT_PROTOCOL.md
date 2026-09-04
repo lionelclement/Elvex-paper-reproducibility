@@ -10,9 +10,10 @@ two complementary evaluations:
 1. a linguistically grounded lexical ablation as the primary direct test;
 2. the repeated binary construction as a secondary scalability stress test.
 
-The committed lexical snapshot already supplies the first layer: 12 distinct
-predicative nouns, nine support verbs, and seven semantic classes extracted from
-the independently maintained `Elvex/test/en-llm` resources.
+The committed `en-oper1` resource supplies the first layer: 12 distinct
+predicative nouns, nine support verbs, and seven semantic classes. It is stored
+under `benchmark/lexical-context/resources/en-oper1/` so the lexical ablation is
+reproducible without depending on a separate evolving grammar directory.
 
 ## Primary experiment: lexical compatibility
 

@@ -1,0 +1,13 @@
+kind	function	form	prep	predicate	realizer
+support	oper1	indef	to	WARNING	GIVE
+support	oper1	indef	of	FEAR	HAVE
+support	oper1	indef	of	MEMORY	HAVE
+support	oper1	indef	of	RECOLLECTION	HAVE
+support	oper1	indef	with	MISUNDERSTANDING	HAVE
+support	oper1	indef	on	PROHIBITION	IMPOSE
+support	oper1	indef	of	CRITIQUE	OFFER
+support	oper1	indef	for	RATIONALE	PROVIDE
+support	oper1	indef	on	STANCE	TAKE
+support	oper1	indef	on	VIEWPOINT	ADOPT
+support	oper1	indef	to	DIVIDEND	PAY
+support	oper1	indef	to	DONATION	MAKE

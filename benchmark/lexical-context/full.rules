@@ -1,7 +1,7 @@
 // FULL: lexicalizing the predicative noun synthesizes the support-verb
 // specification. The noun is computed before V, although surface order is
 // V Det N. This is the same dependency pattern as paper_support_context,
-// applied to independently curated en-llm lexical entries.
+// applied to the dedicated en-oper1 lexical resource.
 
 T1 → S {
     ↓1 = ↑;
