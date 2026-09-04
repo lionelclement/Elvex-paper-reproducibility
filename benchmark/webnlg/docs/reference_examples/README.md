@@ -1,7 +1,16 @@
-These are reference examples extracted from the files provided with the project brief.
-Some of them may use older Elvex syntax.
+# Reference-only Elvex examples
 
-The active grammar for this project is:
+The files in this directory are syntax/reference examples and are **not read by
+the WebNLG benchmark pipeline**.
 
-  user/main.rules
-  user/rules/simple_triples.rules
+For the reproducible WebNLG experiment, use the active resources under
+`benchmark/webnlg/user/`, in particular:
+
+```text
+user/main.rules
+user/rules/frames.rules
+user/rules/simple_triples.rules
+```
+
+See `benchmark/webnlg/README.md` for the commands and files used by the reported
+experiment.

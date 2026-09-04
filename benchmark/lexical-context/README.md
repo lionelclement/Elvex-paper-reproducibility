@@ -1,221 +1,141 @@
 # Lexical-context ablation
 
-This benchmark evaluates synthesized-context reuse on the dedicated English
-`en-oper1` lexical resource committed in `resources/en-oper1/`. It complements
-the synthetic `2^N`/`4^N` support-verb stress test used in the paper: the
-synthetic test isolates search-space growth, whereas this benchmark asks whether
-the same mechanism controls the curated support-verb relations in that resource.
+This directory reproduces the support-verb ablation reported in the paper. It
+tests whether a lexical constraint produced during realization can constrain a
+later realization decision without being supplied in the initial semantic
+input.
 
-## Research question
+## Experimental design
 
-The benchmark tests one realization-dependent property: **support-verb
-selection by a predicative noun**.
-
-For example, the semantic input identifies `WARNING`, but does not prescribe
-`GIVE`. Lexicalizing the predicative noun `warning` synthesizes
-`support:[HEAD:GIVE]`. In the FULL condition, that synthesized structure is
-reused as the inherited specification of the verb, licensing a realization such
-as `John gives a warning`.
-
-The experiment compares three conditions:
-
-- **FULL** — the semantic input contains the predicative-noun head only. The
-  support specification produced by nominal lexicalization is reused to
-  constrain the verb.
-- **NO-CONTEXT** — the same noun is lexicalized, but its synthesized support
-  specification is deliberately ignored. The verb is selected independently
-  from the support-verb inventory represented by the benchmark.
-- **PRE-SPECIFIED** — the correct support specification is supplied in the
-  input from the start. This is the over-specified control condition.
-
-The central comparison is therefore FULL versus PRE-SPECIFIED versus
-NO-CONTEXT. If synthesized context provides the intended control, FULL should
-behave like PRE-SPECIFIED even though its input is less specified, while
-NO-CONTEXT should retain the valid realization and additionally license
-cross-frame noun/support combinations.
-
-This is not an asymptotic-complexity experiment.
-
-## Lexical sample and provenance
-
-The committed `cases.tsv` contains 12 curated `Oper1` predicative-noun
-constructions and nine distinct support verbs:
+The benchmark uses the dedicated English `en-oper1` resource in
+`resources/en-oper1/`. It contains 12 curated `Oper1` predicative-noun relations
+covering nine support verbs:
 
 `ADOPT`, `GIVE`, `HAVE`, `IMPOSE`, `MAKE`, `OFFER`, `PAY`, `PROVIDE`, and
 `TAKE`.
 
-Examples in the source data include:
+For example, the semantic input identifies `WARNING` but does not prescribe
+`GIVE`. Lexicalizing `warning` synthesizes `support:[HEAD:GIVE]`.
 
-- `WARNING` → `GIVE`
-- `FEAR` → `HAVE`
-- `MEMORY` → `HAVE`
-- `PROHIBITION` → `IMPOSE`
-- `CRITIQUE` → `OFFER`
-- `RATIONALE` → `PROVIDE`
-- `STANCE` → `TAKE`
-- `VIEWPOINT` → `ADOPT`
-- `DIVIDEND` → `PAY`
-- `DONATION` → `MAKE`
+The three conditions differ only in access to that support specification:
 
-The source resource is committed with the benchmark:
+- **FULL** — the noun's synthesized support value is reused to constrain the
+  verb;
+- **NO-CONTEXT** — the synthesized support value is ignored and the verb ranges
+  over the same nine-verb inventory;
+- **PRE-SPECIFIED** — the correct support value is supplied in the input from
+  the start.
 
-`benchmark/lexical-context/resources/en-oper1/`
+The experiment isolates support-verb propagation. It does not evaluate lexical
+acquisition or other realization-dependent phenomena.
 
-It contains:
+## Lexical resource and case snapshot
 
-- `en-lexical-functions.tsv`
-- `en-predicative-nouns.tsv`
-- `en-support-verb-profiles.tsv`
-- `en.morpho`
+The canonical source resource is:
 
-`extract_cases.py` normalizes that resource into the committed `cases.tsv`
-snapshot. It keeps unique curated `Oper1` relations with an explicit
-predicative-noun profile, an indefinite nominal predicate, and an overt
-prepositional second argument. These restrictions provide a homogeneous sample
-for the support-verb propagation experiment.
-
-`cases.tsv` also records preposition, semantic-valency, argument restriction,
-Aktionsart, fixedness, and support-verb profile information. These properties
-are **not** ablated in the current experiment. The present benchmark isolates
-support-verb propagation only; other dependencies can be evaluated separately
-without conflating several effects in one test.
-
-The English grammar intentionally leaves `a/an` selection to morphology or
-post-processing. The extractor therefore keeps consonant-initial nouns and uses
-a fixed `a`; article selection is not treated as a context effect.
-
-## Requirements
-
-The benchmark requires:
-
-- Python 3;
-- a built Elvex executable;
-- this `Elvex-paper-reproducibility` checkout.
-
-The benchmark runner locates the Elvex executable in this order:
-
-1. `--elvex PATH`;
-2. `$ELVEX_BIN`;
-3. `elvex` on `$PATH`.
-
-An explicit executable can therefore be supplied with:
-
-```bash
-bash benchmark/lexical-context/run.sh --elvex /path/to/elvex
+```text
+benchmark/lexical-context/resources/en-oper1/
 ```
 
-## Verify the lexical snapshot
-
-From the root of `Elvex-paper-reproducibility`, verify that the committed cases
-still match the dedicated `en-oper1` resource:
+`extract_cases.py` normalizes it into the committed `cases.tsv` snapshot. Verify
+that the snapshot matches the resource with:
 
 ```bash
 python3 benchmark/lexical-context/extract_cases.py --check
 ```
 
-Expected output for the version used in the paper:
+Expected output:
 
 ```text
 OK: 12 lexical-context cases
 ```
 
-If the committed `en-oper1` resource is intentionally edited, omit `--check`
-to regenerate `cases.tsv`:
+See `resources/en-oper1/README.md` for the resource files.
 
-```bash
-python3 benchmark/lexical-context/extract_cases.py
-```
+## Expected structural result
 
-A changed resource or snapshot should be reviewed before using it to reproduce
-the reported numbers.
+Across the 12 cases:
 
-## Smoke test
+- FULL licenses 12 compatible realizations and no incompatible realization;
+- PRE-SPECIFIED licenses the same 12 compatible realizations;
+- NO-CONTEXT preserves those 12 compatible realizations but licenses eight
+  additional support verbs per case, for 108 licensed realizations overall and
+  96 incompatible noun/support combinations.
 
-Run the first three cases with the complete nine-support lexical inventory:
-
-```bash
-bash benchmark/lexical-context/run.sh --limit 3
-```
-
-`--limit` limits only the number of evaluated cases. It does **not** reduce the
-support-verb inventory, so the smoke test and the full experiment compare the
-same lexical alternatives.
-
-Expected structural counts are:
+Equivalent aggregate counts are:
 
 ```text
-cases: 3
-condition       generated  valid  spurious  valid_%
-FULL                    3      3         0  100.000
-NO-CONTEXT             27      3        24   11.111
-PRE-SPECIFIED           3      3         0  100.000
+condition       licensed  compatible  incompatible
+FULL                  12          12             0
+PRE-SPECIFIED         12          12             0
+NO-CONTEXT           108          12            96
 ```
 
-The printed `wall_ms` values are machine- and run-dependent and are therefore
-not part of these expected counts.
+## Requirements
 
-## Full experiment
+- Python 3;
+- a working `elvex` executable;
+- this repository checkout.
 
-Run all 12 cases:
+The runner locates Elvex in this order:
+
+1. `--elvex PATH`;
+2. `$ELVEX_BIN`;
+3. `elvex` on `$PATH`.
+
+## Run the ablation
+
+From the repository root:
 
 ```bash
 bash benchmark/lexical-context/run.sh
 ```
 
-For the committed lexical snapshot, the expected structural result is:
+To supply Elvex explicitly:
 
-```text
-cases: 12
-condition       generated  valid  spurious  valid_%
-FULL                   12     12         0  100.000
-NO-CONTEXT            108     12        96   11.111
-PRE-SPECIFIED          12     12         0  100.000
+```bash
+bash benchmark/lexical-context/run.sh --elvex /path/to/elvex
 ```
 
-Single-run `wall_ms` values are diagnostic only. The paper reports the repeated
-timing protocol and immutable timing snapshot described below rather than a
-single execution.
+A short smoke test can be run with:
 
-The structural interpretation is the important result:
+```bash
+bash benchmark/lexical-context/run.sh --limit 3
+```
 
-- FULL: 12/12 generated outputs are lexically compatible;
-- PRE-SPECIFIED: 12/12 generated outputs are lexically compatible;
-- NO-CONTEXT: all 12 valid realizations remain available, but 96 additional
-  noun/support combinations are licensed.
+`--limit` reduces the number of cases only; the nine-support inventory remains
+unchanged.
 
-Thus FULL obtains the same lexical control as PRE-SPECIFIED while allowing the
-semantic input to remain underspecified until nominal lexicalization determines
-the support verb.
+The local result is written to:
 
-Validate the committed structural snapshot without rerunning Elvex:
+```text
+benchmark/lexical-context/results.tsv
+```
+
+The committed structural snapshot used for static verification is
+`reference-results.tsv`.
+
+## Validate the structural result
+
+Without rerunning Elvex:
 
 ```bash
 python3 benchmark/lexical-context/check_results.py
 python3 -m unittest discover -s benchmark/lexical-context/tests -v
 ```
 
-`check_results.py` verifies the immutable `reference-results.tsv` structural
-snapshot: the complete 12-case/three-condition design, the nine-verb inventory,
-case-level FULL/PRE-SPECIFIED equivalence, retention of every valid output under
-ablation, and the reported 96 incompatible NO-CONTEXT outputs. Timing snapshots
-are checked separately by `check_timing_results.py`.
-
-The top-level validator performs both static and live checks. When `elvex` is
-available on `PATH`, it reruns all 36 condition/case combinations into a
-temporary result file and validates that fresh file against the same
-confirmatory invariants:
+When Elvex is available, the repository-level validator reruns the 12 cases in
+all three conditions into a temporary result file and checks the same
+invariants:
 
 ```bash
 python3 validate_repo.py --require-elvex
 ```
 
-The committed `reference-results.tsv` is never overwritten by repository
-validation.
+## Reproduce the timing measurements
 
-## Repeated timing protocol
-
-The structural counts above are deterministic. To measure timing variability,
-run 30 measured repetitions after two warm-up repetitions:
+The paper reports 30 measured repetitions after two warm-ups, with the order of
+the three conditions balanced across runs:
 
 ```bash
 python3 benchmark/lexical-context/run_repeated.py \
@@ -223,27 +143,10 @@ python3 benchmark/lexical-context/run_repeated.py \
   --repeats 30
 ```
 
-The runner cycles through all six permutations of the three conditions so that
-no condition systematically runs first or last. Every measured repetition is
-validated against the structural hypotheses before its timing is retained.
+For each repetition, the reported time is the sum of the 12 Elvex invocations
+for that condition. Python setup and result validation are not included.
 
-It writes three ignored, machine-specific files:
-
-- `repeated-results.tsv`: condition totals for every repetition;
-- `timing-summary.tsv`: median, quartiles, IQR, p90, p95, and maximum;
-- `timing-environment.tsv`: platform, Python, executable, commit metadata, and
-  run protocol.
-
-Fresh runs intentionally do not overwrite the immutable snapshots used for the
-paper:
-
-- `reference-repeated-results.tsv`: all 90 measured condition-level observations
-  (30 repetitions x 3 conditions);
-- `reference-timing-summary.tsv`: statistics recomputed from those observations;
-- `reference-timing-environment.tsv`: machine, Python, Elvex executable hash,
-  pinned Elvex commit, warm-ups, repetitions, and condition-order protocol.
-
-The paper reports the following values from this committed snapshot:
+The reference timing snapshot reports:
 
 | Condition | Runs | Median (ms) | p95 (ms) |
 | --- | ---: | ---: | ---: |
@@ -251,162 +154,38 @@ The paper reports the following values from this committed snapshot:
 | PRE-SPECIFIED | 30 | 18.931 | 19.979 |
 | NO-CONTEXT | 30 | 26.298 | 27.824 |
 
-Validate the stored timing evidence without rerunning Elvex:
+Validate the committed timing evidence with:
 
 ```bash
 python3 benchmark/lexical-context/check_timing_results.py
 ```
 
-The checker recalculates the timing summary from the 90 raw observations,
-verifies the balanced six-permutation schedule and structural counts for every
-repetition, checks the pinned Elvex commit in the archived environment, and
-verifies the median and p95 values quoted in the paper.
-
-These measurements sum the wall-clock durations of the 12 Elvex invocations in
-each condition. They do not include Python setup or result validation.
-
-## Heterogeneous composition stress test
-
-The original paper stress test repeats one ambiguous construction. The
-heterogeneous test instead composes distinct predicative-noun constructions.
-For every size from one to four, `heterogeneous-panels.tsv` contains nine cyclic
-panels drawn from one representative of each support verb. Within a panel, no
-support verb is repeated; across the nine rotations, every support appears
-exactly `N` times. This gives a balanced deterministic design rather than a
-single favorable selection.
-
-FULL reuses the support synthesized by each noun. NO-CONTEXT keeps the same
-noun inputs and the same nine-verb inventory but selects each verb
-independently. Therefore a panel of size `N` must have one FULL output and
-`9^N` NO-CONTEXT outputs, exactly one of which is the compatible sequence.
-
-Run a small smoke test first:
-
-```bash
-python3 benchmark/lexical-context/run_heterogeneous.py \
-  --max-n 2 \
-  --panels-per-n 1
-```
-
-Run the complete 36-panel experiment and validate the generated result:
-
-```bash
-python3 benchmark/lexical-context/run_heterogeneous.py --max-n 4
-python3 benchmark/lexical-context/check_heterogeneous_results.py \
-  --require-complete
-```
-
-Expected aggregate structural counts are:
-
-| Condition | N | Panels | Licensed | Compatible | Incompatible | Compatible % |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| FULL | 1--4 | 9 per N | 9 per N | 9 per N | 0 | 100.000 |
-| NO-CONTEXT | 1 | 9 | 81 | 9 | 72 | 11.111 |
-| NO-CONTEXT | 2 | 9 | 729 | 9 | 720 | 1.235 |
-| NO-CONTEXT | 3 | 9 | 6,561 | 9 | 6,552 | 0.137 |
-| NO-CONTEXT | 4 | 9 | 59,049 | 9 | 59,040 | 0.015 |
-
-The generated `heterogeneous-results.tsv` also records chart, forest,
-saturation, internal-time, and RSS fields when the installed Elvex executable
-emits `ELVEX_METRICS`. Structural validity and output counts do not depend on
-that optional instrumentation.
-
-Both extended experiments can also be run through the repository validator:
-
-```bash
-python3 validate_repo.py --require-elvex --run-extended-context
-```
-
-See `EXPERIMENT_PROTOCOL.md` for the confirmatory hypotheses, acceptance
-criteria, timing protocol, relationship to the synthetic stress test, and the
-recommended multi-phenomenon follow-up suite.
-
-## Output file
-
-Each run writes an ignored local result file:
+The committed files are:
 
 ```text
-benchmark/lexical-context/results.tsv
+reference-repeated-results.tsv
+reference-timing-summary.tsv
+reference-timing-environment.tsv
 ```
 
-The paper's immutable reference snapshot is committed separately as
-`reference-results.tsv`. This prevents an ordinary rerun from silently changing
-the evidence used by the repository's static validation.
+Fresh timing runs write machine-specific local files with the corresponding
+unprefixed names.
 
-There is one row per case and condition. The columns are:
+## Result columns
 
-- `condition` — `FULL`, `NO-CONTEXT`, or `PRE-SPECIFIED`;
+`results.tsv` / `reference-results.tsv` contain one row per case and condition.
+The main columns are:
+
+- `condition` — FULL, NO-CONTEXT, or PRE-SPECIFIED;
 - `case_id` — stable identifier from `cases.tsv`;
 - `predicate` — predicative-noun semantic head;
-- `expected` — lexically compatible reference realization;
-- `unique_outputs` — number of distinct outputs generated for that case;
-- `valid_outputs` — whether the expected realization is present (0 or 1 in the
-  current benchmark);
+- `expected` — compatible reference realization;
+- `unique_outputs` — number of distinct outputs generated for the case;
+- `valid_outputs` — number of compatible outputs;
 - `spurious_outputs` — generated outputs other than the expected realization;
-- `valid_fraction` — valid outputs divided by unique outputs for that case;
-- `wall_ms` — wall-clock time for that invocation of Elvex;
-- `metric_lines` — number of `ELVEX_METRICS` records emitted by the Elvex build.
+- `valid_fraction` — compatible outputs divided by distinct outputs;
+- `wall_ms` — wall-clock time for the Elvex invocation.
 
-The summary printed by the runner sums `unique_outputs`, `valid_outputs`, and
-`spurious_outputs` across cases. Consequently, `108` in NO-CONTEXT means 108
-case-level distinct realizations in total, not 108 globally unique strings.
-
-The runner exits with an error if FULL or PRE-SPECIFIED fails to produce exactly
-one valid output and zero spurious outputs for any case.
-
-## Running selected conditions
-
-Conditions can be run separately, for example:
-
-```bash
-bash benchmark/lexical-context/run.sh \
-  --conditions FULL,PRE-SPECIFIED
-```
-
-or:
-
-```bash
-bash benchmark/lexical-context/run.sh \
-  --conditions NO-CONTEXT
-```
-
-A different case snapshot or result path can be supplied directly to
-`run_benchmark.py`; use `--help` to list the available options:
-
-```bash
-python3 benchmark/lexical-context/run_benchmark.py --help
-```
-
-## Relation to the synthetic stress test
-
-This benchmark and the synthetic support-verb experiment answer different
-questions.
-
-The synthetic experiment deliberately repeats independent binary dependencies
-and is useful for measuring controlled growth of the chart and shared forest.
-The lexical-context benchmark instead uses the dedicated `en-oper1` lexical
-resource and asks whether synthesized-context reuse prevents lexically
-incompatible cross-frame realizations.
-
-The lexical benchmark should therefore be read as the linguistically grounded
-ablation, and the synthetic experiment as a separate search-space stress test.
-
-## Troubleshooting
-
-If the shell reports `permission denied` for `run.sh`, either invoke it through
-`bash` as shown above or restore the executable bit:
-
-```bash
-chmod +x benchmark/lexical-context/run.sh
-```
-
-If the runner reports that it cannot find Elvex, use `--elvex` or set
-`ELVEX_BIN`:
-
-```bash
-export ELVEX_BIN=~/Elvex/bin/elvex
-bash benchmark/lexical-context/run.sh
-```
-
-If snapshot verification reports that `cases.tsv` is out of date, inspect the
-committed `resources/en-oper1/` changes before regenerating the file.
+The summary printed by the runner sums counts across cases. Thus 108 for
+NO-CONTEXT means 108 case-level realizations in total, not 108 globally unique
+strings.

@@ -1,17 +1,17 @@
 # WebNLG v2.1 local RDF realization benchmark
 
-This directory reproduces the WebNLG experiment reported in the camera-ready
-Elvex paper. It evaluates **local realization of one-to-three modified RDF
-triples** with explicit Elvex frames and fallback rules.
+This directory reproduces the WebNLG experiment reported in the paper. It
+evaluates **local realization of entries containing one to three modified RDF
+triples** using explicit Elvex predicate frames and fallback rules.
 
-The scope is deliberately narrower than a full WebNLG RDF-to-text system:
-Elvex does not infer arbitrary RDF semantics, global document ordering, or a
-complete discourse plan. The reported reference scores are oracle-style
-best-of-forest diagnostics, not leaderboard-comparable single-output scores.
+The scope is narrower than a complete RDF-to-text system: Elvex does not infer
+arbitrary RDF semantics, global document ordering, or a complete discourse
+plan. Reference scores are oracle-style best-of-forest diagnostics, not
+leaderboard-comparable single-output scores.
 
-## Data provenance and benchmark scope
+## Data provenance
 
-The source repository is pinned in `user/sources.json`:
+The WebNLG source repository and revision are pinned in `user/sources.json`:
 
 ```text
 https://gitlab.com/shimorina/webnlg-dataset.git
@@ -23,44 +23,36 @@ The benchmark uses:
 - WebNLG `release_v2.1/xml`;
 - `modifiedtripleset` / `mtriple` RDF triples;
 - direct `<lex>` elements as sentence references;
-- the official **test** split;
-- native entries containing exactly 1, 2, or 3 modified triples;
-- no splitting of larger entries into artificial one-triple benchmark examples;
-- no triple deduplication or near-duplicate merging before Elvex input
-  generation.
+- the official test split;
+- entries containing exactly 1, 2, or 3 modified triples.
 
-The expected official test-set counts are:
+Expected test-set input counts are:
 
 ```text
-1 triple: 388 inputs
-2 triples: 298 inputs
-3 triples: 331 inputs
+1 triple: 388
+2 triples: 298
+3 triples: 331
 ```
 
-`./run data-check` verifies the release, split, and size invariants. The expected
-number of extracted entries across train/dev/test is 16,095.
+`./run data-check` verifies the release, split, and size invariants.
 
-## What the paper measures
+## Metrics
 
-For each graph size, the batch scorer reports:
+For each graph size, the scorer reports:
 
 - input count;
 - inputs with at least one generated realization;
 - generation coverage;
 - mean compatible realizations per generated input;
-- best-of-forest exact match with any human reference;
-- best-of-forest normalized exact match;
+- best-of-forest exact and normalized exact match with a human reference;
 - mean sentence-level best-of-forest BLEU;
 - mean sentence-level best-of-forest chrF.
 
-These metrics measure **local realization coverage and reference overlap**.
-Although the grammar contains resources for local frame combination, repeated
-entities, typed relatives, and fallback, this table is **not** a
-phenomenon-specific structural-accuracy evaluation.
+These metrics measure local realization coverage and reference overlap. The
+experiment does not report separate correctness scores for repeated entities,
+local frame combination, typed relatives, or fallback.
 
-## Camera-ready results
-
-The expected summaries for the pinned resources are:
+## Expected results
 
 | triples | inputs | generated | coverage | mean outputs | exact | norm. exact | BLEU | chrF |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -68,7 +60,7 @@ The expected summaries for the pinned resources are:
 | 2 | 298 | 286 | 96.0% | 10.37 | 0.0% | 0.0% | 43.60 | 71.56 |
 | 3 | 331 | 317 | 95.8% | 41.23 | 0.0% | 0.0% | 38.44 | 67.60 |
 
-The machine-readable results are written to:
+Machine-readable summaries are written to:
 
 ```text
 build/reports/comparison_1_triples.summary.json
@@ -76,31 +68,20 @@ build/reports/comparison_2_triples.summary.json
 build/reports/comparison_3_triples.summary.json
 ```
 
-The corresponding per-input reports are
+Per-input reports are written to
 `build/reports/comparison_<n>_triples.tsv`.
 
 ## Requirements
 
-The wrapper requires:
-
 - Python 3.10 or newer;
-- Git for downloading the pinned dataset repository;
+- Git;
 - `elvex` on `PATH` for generation;
 - `elvexlexicon` on `PATH` for compacted-lexicon construction.
 
-Python dependencies are listed in `requirements.txt` (`sacrebleu` for the
-reference-overlap metrics). The `./run` wrapper creates and manages a local
-`.venv`.
+Python dependencies are listed in `requirements.txt`. The `./run` wrapper
+creates and manages a local `.venv`.
 
-On macOS with Homebrew, for example:
-
-```bash
-brew install python git
-cd benchmark/webnlg
-./run setup
-```
-
-## Reproduce the paper benchmark
+## Reproduce the benchmark
 
 From `benchmark/webnlg/`:
 
@@ -121,36 +102,29 @@ From `benchmark/webnlg/`:
 ./run compare 3 0
 ```
 
-For `compare`, a limit of `0` means **all selected inputs**. The shorter
-`./run all` command is a project bootstrap and prepares the one-triple sample;
-the explicit commands above are the reproducibility protocol for all three
-paper rows.
+For `compare`, a limit of `0` means all selected inputs.
 
-Generation limits can be overridden when necessary:
-
-```bash
-ELVEX_MAX_ITEMS=200000
-ELVEX_MAX_TIME=60
-ELVEX_PROCESS_TIMEOUT=70
-```
-
-For example:
+Generation limits can be overridden if needed, for example:
 
 ```bash
 ELVEX_MAX_ITEMS=500000 ./run compare 3 0
 ```
 
-## Pipeline artifacts
+Other supported commands are listed by:
 
-### Extraction and selection
+```bash
+./run help
+```
 
-`./run extract` writes:
+## Main pipeline artifacts
+
+Extraction:
 
 ```text
 data/processed/triples.jsonl
 ```
 
-`./run select` writes size-specific official-test sequences:
+Selected official-test sequences:
 
 ```text
 build/sequences/1.jsonl
@@ -158,54 +132,35 @@ build/sequences/2.jsonl
 build/sequences/3.jsonl
 ```
 
-### Elvex inputs
-
-`./run inputs <n>` creates one Elvex input per WebNLG entry:
+Generated Elvex inputs:
 
 ```text
-build/inputs/simple_triples/   # n = 1
-build/inputs/2_triples/        # n = 2
-build/inputs/3_triples/        # n = 3
+build/inputs/simple_triples/   # 1 triple
+build/inputs/2_triples/        # 2 triples
+build/inputs/3_triples/        # 3 triples
 ```
 
-Each directory has an `.index.tsv` carrying source metadata, triples, and human
-references. Concatenated `.input` diagnostics may also be produced for
-inspection; they must not be passed to Elvex as a single generation request.
+Each input directory has an `.index.tsv` with source metadata, triples, and
+human references.
 
-### Lexical resources
-
-The generated/open-class compacted-lexicon resources are:
+The main hand-maintained realization resources are:
 
 ```text
-user/main.pattern
-user/main.morpho
-```
-
-Hand-maintained additions live in:
-
-```text
-user/override.pattern
-user/override.morpho
+user/main.rules
 user/lexicon/base.lexicon
 user/lexicon/predicate_overrides.tsv
 user/rules/frames.rules
 user/rules/simple_triples.rules
 ```
 
-`./run compact` builds:
-
-```text
-build/lexicon/main.tbl
-build/lexicon/main.fsa
-```
-
-using `elvexlexicon` with `user/main.macros`, `user/main.pattern`, and
-`user/main.morpho`.
+Generated/open-class compacted-lexicon resources include `user/main.pattern`
+and `user/main.morpho`; `./run compact` builds `build/lexicon/main.tbl` and
+`build/lexicon/main.fsa` with `elvexlexicon`.
 
 ## Inspect individual examples
 
-Run one selected input and show its triples, references, generated outputs, and
-scores:
+Run one selected input and display its triples, references, generated outputs,
+and scores:
 
 ```bash
 ./run compare-one 1 1
@@ -213,36 +168,22 @@ scores:
 ./run compare-one 3 1
 ```
 
-Run a small diagnostic batch:
+A small diagnostic batch can be run with, for example:
 
 ```bash
-./run compare 1 20
 ./run compare 2 20
-./run compare 3 20
 ```
 
-Raw and finalized outputs are retained under `build/outputs/compare/`, with
-Elvex logs under `build/logs/elvex/`.
+## Output normalization and scoring
 
-## Output normalization and reference scores
+The comparison pipeline applies final sentence capitalization and
+punctuation-spacing normalization before reference matching. Raw outputs are
+retained separately.
 
-Elvex resources keep ordinary function words lowercase and preserve proper-name
-capitalization. The comparison pipeline applies final sentence capitalization
-and punctuation-spacing normalization before reference matching. Raw outputs
-are retained separately from finalized outputs.
+`best_normalized_match` normalizes case, whitespace, and spaces before
+punctuation. BLEU and chrF are computed with SacreBLEU at sentence level. For
+exact match, normalized exact match, BLEU, and chrF, the best score among the
+generated realizations is retained for each generated input.
 
-`best_normalized_match` performs only light normalization of case, whitespace,
-and spaces before punctuation. It is a development/reference-overlap
-diagnostic, not an official WebNLG metric.
-
-BLEU and chrF are computed with SacreBLEU at sentence level and the best score
-among the generated forest realizations is retained for each generated input.
-
-## Important interpretation
-
-The grammar includes explicit predicate frames, local combination rules,
-repeated-entity handling, relative constructions, numeric realization, and
-controlled fallback. However, the camera-ready experiment reports aggregate
-coverage and reference overlap only. It should therefore be interpreted as a
-**local RDF realization test**, not as evidence that each listed structural
-phenomenon has been independently measured for correctness.
+These are reference-overlap diagnostics for the generated forest, not a
+runtime output-selection model.
