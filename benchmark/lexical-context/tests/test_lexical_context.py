@@ -42,12 +42,12 @@ class LexicalContextSnapshotTests(unittest.TestCase):
         self.assertGreaterEqual(len({row["pred_class"] for row in self.cases}), 6)
         self.assertGreaterEqual(len({row["prep"] for row in self.cases}), 4)
 
-    def test_no_context_enumerates_exactly_the_fixed_support_inventory(self):
+    def test_no_context_selects_support_inventory_by_terminal(self):
         source = (HERE / "no-context.rules").read_text(encoding="utf-8")
-        enumerated = set(re.findall(r"↓1\s*=\s*\[HEAD:([A-Z_]+)\]", source))
-        expected = {row["support"] for row in self.cases}
-        self.assertEqual(enumerated, expected)
-        self.assertEqual(source.count("VP → V Det N"), len(expected))
+        self.assertEqual(source.count("VP → V Det N"), 1)
+        self.assertIn("↓1 = [];", source)
+        self.assertIn("V → support_verb", source)
+        self.assertNotRegex(source, r"↓1\s*=\s*\[HEAD:([A-Z_]+)\]")
 
     def test_full_and_prespecified_keep_the_same_surface_topology(self):
         full = (HERE / "full.rules").read_text(encoding="utf-8")
@@ -59,17 +59,35 @@ class LexicalContextSnapshotTests(unittest.TestCase):
         self.assertIn("↓1 = $support", full)
         self.assertIn("support:$support", prespecified)
 
-    def test_generated_lexicon_preserves_every_curated_mapping(self):
+    def test_generated_lexicons_preserve_inventory_with_distinct_lookup_modes(self):
         from tempfile import TemporaryDirectory
 
         with TemporaryDirectory() as directory:
-            path = Path(directory) / "generated.lexicon"
-            run_benchmark.write_lexicon(path, self.cases)
-            source = path.read_text(encoding="utf-8")
+            context_path = Path(directory) / "context.lexicon"
+            no_context_path = Path(directory) / "no-context.lexicon"
+            run_benchmark.write_lexicon(context_path, self.cases)
+            run_benchmark.write_lexicon(no_context_path, self.cases, no_context=True)
+            context_source = context_path.read_text(encoding="utf-8")
+            no_context_source = no_context_path.read_text(encoding="utf-8")
+
+        supports = {row["support"]: row for row in self.cases}
+        for support, row in supports.items():
+            self.assertIn(f'{row["verb"]} verb [', context_source)
+            self.assertIn(f'HEAD:{support},', context_source)
+            self.assertIn(f'{row["verb"]} support_verb [', no_context_source)
+            match = re.search(
+                rf'{re.escape(row["verb"])} support_verb \[\n(.*?)\n\];',
+                no_context_source,
+                re.DOTALL,
+            )
+            self.assertIsNotNone(match)
+            self.assertNotIn("HEAD:", match.group(1))
+
         for row in self.cases:
-            self.assertIn(f'HEAD:{row["predicate"]},', source)
-            self.assertIn(f'support:[HEAD:{row["support"]}]', source)
-            self.assertIn(f'HEAD:{row["support"]},', source)
+            self.assertIn(f'HEAD:{row["predicate"]},', context_source)
+            self.assertIn(f'support:[HEAD:{row["support"]}]', context_source)
+            self.assertIn(f'HEAD:{row["predicate"]},', no_context_source)
+            self.assertIn(f'support:[HEAD:{row["support"]}]', no_context_source)
 
     def test_checker_rejects_a_hidden_full_overgeneration(self):
         changed = copy.deepcopy(self.results)

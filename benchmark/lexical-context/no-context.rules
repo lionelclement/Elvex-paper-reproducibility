@@ -1,6 +1,6 @@
 // NO-CONTEXT: the predicative noun is lexicalized exactly as in FULL, but the
-// support structure synthesized by it is ignored. The verb is therefore
-// selected independently from the set of support verbs present in cases.tsv.
+// support structure synthesized by it is ignored. Support verbs are exposed
+// through a dedicated terminal whose lexical entries deliberately have no HEAD.
 
 T1 → S {
     ↓1 = ↑;
@@ -18,75 +18,17 @@ NP → proper_noun {
     ⇑ = ⇓1;
 }
 
-// In NO-CONTEXT the support choice must still be operationally available to
-// Elvex: a daughter cannot be opened until its inherited structure is known.
-// We therefore enumerate support HEADs at VP level. Crucially, none of these
-// choices depends on the synthesized structure of N, so every support remains
-// locally available for every predicative noun.
+// The noun's synthesized support constraint is deliberately not consulted.
+// With no HEAD on V, Elvex selects entries by terminal name. The dedicated
+// support_verb terminal therefore exposes the full nine-verb inventory.
 VP → V Det N {
     [OBJECT:$object];
-    ↓1 = [HEAD:ADOPT];
+    ↓1 = [];
     ↓2 = [HEAD:A];
     ↓3 = $object;
 }
 
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:GIVE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:HAVE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:IMPOSE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:MAKE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:OFFER];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:PAY];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:PROVIDE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-VP → V Det N {
-    [OBJECT:$object];
-    ↓1 = [HEAD:TAKE];
-    ↓2 = [HEAD:A];
-    ↓3 = $object;
-}
-
-V → verb {
+V → support_verb {
     ↓1 = ↑;
     ⇑ = ⇓1;
 }

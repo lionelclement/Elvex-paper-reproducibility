@@ -43,7 +43,7 @@ def atom(word: str) -> str:
     return f"_{word}_"
 
 
-def write_lexicon(path: Path, cases):
+def write_lexicon(path: Path, cases, *, no_context: bool = False):
     supports = {}
     nouns = {}
     for row in cases:
@@ -60,11 +60,15 @@ def write_lexicon(path: Path, cases):
     ]
 
     # Inflected support forms are stored directly: morphology is deliberately
-    # outside this ablation.
+    # outside this ablation. FULL/PRE-SPECIFIED use HEAD lookup. NO-CONTEXT uses
+    # a dedicated terminal with HEAD deliberately absent, so Elvex retrieves
+    # the complete support inventory by terminal name.
     for support, row in sorted(supports.items()):
-        lines.extend([
-            f'{row["verb"]} verb [',
-            f'    HEAD:{support},',
+        terminal = "support_verb" if no_context else "verb"
+        entry = [f'{row["verb"]} {terminal} [']
+        if not no_context:
+            entry.append(f'    HEAD:{support},')
+        entry.extend([
             f'    lexical_aspect:{row["support_aspect"]},',
             f'    phase:{row["support_phase"]},',
             f'    stance:{row["support_stance"]},',
@@ -73,6 +77,7 @@ def write_lexicon(path: Path, cases):
             '];',
             '',
         ])
+        lines.extend(entry)
 
     # Lexicalizing the noun produces the complete inherited structure required
     # by the support verb. This mirrors test/paper_support_context/support.lexicon.
@@ -229,13 +234,17 @@ def main():
     results = []
 
     with tempfile.TemporaryDirectory(prefix="elvex-lexical-context-") as td:
-        lexicon = Path(td) / "benchmark.lexicon"
+        context_lexicon = Path(td) / "benchmark-context.lexicon"
+        no_context_lexicon = Path(td) / "benchmark-no-context.lexicon"
         # --limit is an evaluation convenience only. Keep the lexical
-        # inventory fixed so FULL / NO-CONTEXT / PRE-SPECIFIED are compared
-        # against the same support-verb alternatives in smoke and full runs.
-        write_lexicon(lexicon, all_cases)
+        # inventory fixed so all conditions use the same nine support forms.
+        # Only the lookup representation differs: HEAD-indexed for FULL/PRE,
+        # terminal-indexed (no HEAD) for NO-CONTEXT.
+        write_lexicon(context_lexicon, all_cases)
+        write_lexicon(no_context_lexicon, all_cases, no_context=True)
         for condition in conditions:
             rules = CONDITIONS[condition]
+            lexicon = no_context_lexicon if condition == "NO-CONTEXT" else context_lexicon
             for row in cases:
                 surfaces, metric_lines, wall_ms, diagnostics = run_one(
                     elvex, rules, lexicon, inherited(row, condition), Path(td)
